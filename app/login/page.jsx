@@ -22,7 +22,7 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password)
-      router.push('/')
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.')

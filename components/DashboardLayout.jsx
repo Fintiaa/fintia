@@ -29,7 +29,7 @@ const navItems = [
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -44,9 +44,16 @@ export default function DashboardLayout({ children }) {
   };
 
   const getUserInitials = () => {
+    if (profile?.full_name) {
+      const parts = profile.full_name.trim().split(' ');
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return parts[0][0].toUpperCase();
+    }
     if (!user?.email) return 'U';
     return user.email.charAt(0).toUpperCase();
   };
+
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuario';
 
   return (
     <div className={styles.dashboardLayout}>
@@ -128,7 +135,7 @@ export default function DashboardLayout({ children }) {
           </button>
 
           <div className={styles.headerActions}>
-            <button className={styles.addButton}>
+            <button className={styles.addButton} onClick={() => router.push('/dashboard/transactions')}>
               <Plus size={20} />
               <span>Nuevo gasto</span>
             </button>
@@ -152,7 +159,7 @@ export default function DashboardLayout({ children }) {
                   <div className={styles.userInfo}>
                     <div className={styles.userAvatar}>{getUserInitials()}</div>
                     <div>
-                      <p className={styles.userName}>{user?.email?.split('@')[0]}</p>
+                      <p className={styles.userName}>{displayName}</p>
                       <p className={styles.userEmail}>{user?.email}</p>
                     </div>
                   </div>
