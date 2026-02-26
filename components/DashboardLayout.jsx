@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import {
@@ -15,23 +15,43 @@ import {
   X,
   ChevronDown,
   Plus,
+  Mail,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { getUnreadAlertCount } from '@/lib/supabase/alerts';
 import styles from './DashboardLayout.module.css';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Wallet, label: 'Transacciones', path: '/dashboard/transactions' },
   { icon: PieChart, label: 'Presupuestos', path: '/dashboard/budgets' },
+  { icon: AlertTriangle, label: 'Alertas', path: '/dashboard/alerts' },
+  { icon: Mail, label: 'Sincronizar', path: '/dashboard/sync' },
   { icon: TrendingUp, label: 'Reportes', path: '/dashboard/reports' },
 ];
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    async function fetchAlertCount() {
+      try {
+        const count = await getUnreadAlertCount();
+        setUnreadAlerts(count);
+      } catch {
+        // silently fail
+      }
+    }
+    if (profile?.subscription_tier === 'premium') {
+      fetchAlertCount();
+    }
+  }, [profile, pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -140,9 +160,11 @@ export default function DashboardLayout({ children }) {
               <span>Nuevo gasto</span>
             </button>
 
-            <button className={styles.notificationBtn}>
+            <button className={styles.notificationBtn} onClick={() => router.push('/dashboard/alerts')}>
               <Bell size={20} />
-              <span className={styles.notificationBadge}>3</span>
+              {unreadAlerts > 0 && (
+                <span className={styles.notificationBadge}>{unreadAlerts}</span>
+              )}
             </button>
 
             <div className={styles.userMenu}>
