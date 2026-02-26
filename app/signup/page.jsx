@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import styles from '@/pages/Signup.module.css'
@@ -15,7 +14,6 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
-  const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
