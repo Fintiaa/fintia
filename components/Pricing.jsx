@@ -1,64 +1,47 @@
 import { Check, Crown, ArrowRight } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import styles from './Pricing.module.css';
 
-const plans = [
-  {
-    name: 'Gratis',
-    price: '$0',
-    period: 'para siempre',
-    description: 'Todo lo básico para comenzar a organizar tus finanzas.',
-    features: [
-      'Registro manual ilimitado',
-      'Vista de transacciones',
-      'Dashboards básicos',
-      'Categorización de gastos',
-      'Exportar a CSV',
-    ],
-    cta: 'Comenzar gratis',
-    popular: false,
-  },
-  {
-    name: 'Premium',
-    price: '$9.99',
-    period: '/mes',
-    description: 'Automatización y control total para optimizar tu dinero.',
-    features: [
-      'Todo lo del plan Gratis',
-      'Sincronización bancaria',
-      'Presupuestos por categoría',
-      'Alertas inteligentes',
-      'Insights financieros',
-      'Soporte prioritario',
-      'Sin anuncios',
-    ],
-    cta: 'Probar 14 días gratis',
-    popular: true,
-  },
-];
+const Pricing = async () => {
+  const t = await getTranslations('Pricing');
 
-const Pricing = () => {
+  const plans = [
+    {
+      name: t('free.name'),
+      price: '$0',
+      period: t('free.period'),
+      description: t('free.description'),
+      features: [t('free.f1'), t('free.f2'), t('free.f3'), t('free.f4'), t('free.f5')],
+      cta: t('free.cta'),
+      popular: false,
+    },
+    {
+      name: t('premium.name'),
+      price: '$9.99',
+      period: t('premium.period'),
+      description: t('premium.description'),
+      features: [t('premium.f1'), t('premium.f2'), t('premium.f3'), t('premium.f4'), t('premium.f5'), t('premium.f6'), t('premium.f7')],
+      cta: t('premium.cta'),
+      popular: true,
+    },
+  ];
+
   return (
     <section id="pricing" className={styles.pricing}>
       <div className="container">
         <div className="section-header">
-          <span className={styles.sectionLabel}>Precios</span>
-          <h2>Simple y transparente</h2>
-          <p>
-            Comienza gratis y actualiza cuando lo necesites. Sin sorpresas, sin
-            costos ocultos.
-          </p>
+          <span className={styles.sectionLabel}>{t('label')}</span>
+          <h2>{t('title')}</h2>
+          <p>{t('description')}</p>
         </div>
 
         <div className={styles.pricingGrid}>
           {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`${styles.pricingCard} ${plan.popular ? styles.popular : ''}`}
-            >
+            <div key={index} className={`${styles.pricingCard} ${plan.popular ? styles.popular : ''}`}>
               {plan.popular && (
                 <div className={styles.popularBadge}>
                   <Crown size={14} />
-                  Más popular
+                  {t('mostPopular')}
                 </div>
               )}
               <div className={styles.planHeader}>
@@ -79,10 +62,7 @@ const Pricing = () => {
                 ))}
               </ul>
 
-              <a
-                href="#"
-                className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'} ${styles.planBtn}`}
-              >
+              <a href="#" className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'} ${styles.planBtn}`}>
                 {plan.cta}
                 <ArrowRight size={18} />
               </a>
@@ -93,11 +73,8 @@ const Pricing = () => {
         <div className={styles.guarantee}>
           <div className={styles.guaranteeIcon}>🛡️</div>
           <div className={styles.guaranteeContent}>
-            <h4>Garantía de satisfacción</h4>
-            <p>
-              Si no estás satisfecho con Premium, te devolvemos tu dinero en los
-              primeros 30 días. Sin preguntas.
-            </p>
+            <h4>{t('guarantee')}</h4>
+            <p>{t('guaranteeDesc')}</p>
           </div>
         </div>
       </div>

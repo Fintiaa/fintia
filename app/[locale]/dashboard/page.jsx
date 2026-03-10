@@ -8,9 +8,11 @@ import TransactionModal from '@/components/dashboard/TransactionModal'
 import { getTransactions, getMonthlyStats } from '@/lib/supabase/transactions'
 import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { useTranslations } from 'next-intl'
 import styles from './page.module.css'
 
 export default function DashboardPage() {
+  const t = useTranslations('Dashboard')
   const { user, profile } = useAuth()
   const [stats, setStats] = useState({ income: 0, expenses: 0, balance: 0 })
   const [recent, setRecent] = useState([])
@@ -48,8 +50,8 @@ export default function DashboardPage() {
     today.setHours(0, 0, 0, 0)
     const yest = new Date(today)
     yest.setDate(yest.getDate() - 1)
-    if (date.getTime() === today.getTime()) return 'Hoy'
-    if (date.getTime() === yest.getTime()) return 'Ayer'
+    if (date.getTime() === today.getTime()) return t('today')
+    if (date.getTime() === yest.getTime()) return t('yesterday')
     return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
   }
 
@@ -59,28 +61,28 @@ export default function DashboardPage() {
 
   const statsCards = [
     {
-      title: 'Balance del Mes',
+      title: t('balanceCard'),
       value: fmt(stats.balance),
       icon: DollarSign,
       color: 'green',
       changeType: stats.balance >= 0 ? 'positive' : 'negative',
-      change: stats.balance >= 0 ? 'Positivo' : 'Negativo',
+      change: stats.balance >= 0 ? t('positive') : t('negative'),
     },
     {
-      title: 'Ingresos del Mes',
+      title: t('incomeCard'),
       value: fmt(stats.income),
       icon: TrendingUp,
       color: 'blue',
       changeType: 'positive',
-      change: 'Este mes',
+      change: t('thisMonth'),
     },
     {
-      title: 'Gastos del Mes',
+      title: t('expensesCard'),
       value: fmt(stats.expenses),
       icon: CreditCard,
       color: 'red',
       changeType: 'negative',
-      change: 'Este mes',
+      change: t('thisMonth'),
     },
   ]
 
@@ -90,12 +92,12 @@ export default function DashboardPage() {
         {/* Header */}
         <div className={styles.pageHeader}>
           <div>
-            <h1>Hola, {userName} 👋</h1>
-            <p>Resumen de tus finanzas — {monthLabel}</p>
+            <h1>{t('greeting', { name: userName })}</h1>
+            <p>{t('summary', { month: monthLabel })}</p>
           </div>
           <button className={styles.newTransactionBtn} onClick={() => setModalOpen(true)}>
             <Plus size={18} />
-            Nueva transacción
+            {t('newTransaction')}
           </button>
         </div>
 
@@ -127,27 +129,27 @@ export default function DashboardPage() {
         {/* Recent Transactions */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <h2>Transacciones Recientes</h2>
+            <h2>{t('recentTransactions')}</h2>
             <Link href="/dashboard/transactions" className={styles.viewAll}>
-              Ver todas
+              {t('viewAll')}
             </Link>
           </div>
 
           {loading ? (
-            <p className={styles.loadingText}>Cargando...</p>
+            <p className={styles.loadingText}>{t('loading')}</p>
           ) : recent.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>Aún no hay transacciones registradas.</p>
+              <p>{t('empty')}</p>
               <button className={styles.emptyBtn} onClick={() => setModalOpen(true)}>
-                <Plus size={16} /> Registrar primera transacción
+                <Plus size={16} /> {t('registerFirst')}
               </button>
             </div>
           ) : (
             <div className={styles.transactionsList}>
-              {recent.map((t) => {
-                const cat = getCategoryById(t.category_id)
+              {recent.map((tx) => {
+                const cat = getCategoryById(tx.category_id)
                 return (
-                  <div key={t.id} className={styles.transactionItem}>
+                  <div key={tx.id} className={styles.transactionItem}>
                     <div
                       className={styles.transactionIcon}
                       style={{
@@ -159,19 +161,19 @@ export default function DashboardPage() {
                     </div>
                     <div className={styles.transactionInfo}>
                       <p className={styles.transactionName}>
-                        {t.description || cat?.name}
+                        {tx.description || cat?.name}
                       </p>
                       <p className={styles.transactionCategory}>
-                        {cat?.name} · {fmtDate(t.date)}
+                        {cat?.name} · {fmtDate(tx.date)}
                       </p>
                     </div>
                     <p
                       className={`${styles.transactionAmount} ${
-                        t.type === 'income' ? styles.positive : styles.negative
+                        tx.type === 'income' ? styles.positive : styles.negative
                       }`}
                     >
-                      {t.type === 'income' ? '+' : '-'}
-                      {fmt(t.amount)}
+                      {tx.type === 'income' ? '+' : '-'}
+                      {fmt(tx.amount)}
                     </p>
                   </div>
                 )
@@ -182,23 +184,23 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <div className={styles.quickActions}>
-          <h3>Acciones Rápidas</h3>
+          <h3>{t('quickActions')}</h3>
           <div className={styles.actionsGrid}>
             <button className={styles.actionCard} onClick={() => setModalOpen(true)}>
               <span className={styles.actionIcon}>➕</span>
-              <span>Agregar Gasto</span>
+              <span>{t('addExpense')}</span>
             </button>
             <button className={styles.actionCard} onClick={() => setModalOpen(true)}>
               <span className={styles.actionIcon}>💰</span>
-              <span>Agregar Ingreso</span>
+              <span>{t('addIncome')}</span>
             </button>
             <Link href="/dashboard/transactions" className={styles.actionCard}>
               <span className={styles.actionIcon}>📋</span>
-              <span>Transacciones</span>
+              <span>{t('transactions')}</span>
             </Link>
             <Link href="/dashboard/reports" className={styles.actionCard}>
               <span className={styles.actionIcon}>📊</span>
-              <span>Reportes</span>
+              <span>{t('reports')}</span>
             </Link>
           </div>
         </div>

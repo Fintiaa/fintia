@@ -1,34 +1,66 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Mail, Lock, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
+import { Link } from '@/i18n/navigation'
+import { Mail, Lock, ArrowRight, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
-import styles from '@/pages/Login.module.css'
+import { useTranslations } from 'next-intl'
+import styles from '@/pages/Signup.module.css'
 
-export default function LoginPage() {
+export default function SignupPage() {
+  const t = useTranslations('Signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { signIn } = useAuth()
-  const router = useRouter()
+  const { signUp } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (password !== confirmPassword) {
+      setError(t('errorPasswordMatch'))
+      return
+    }
+
+    if (password.length < 6) {
+      setError(t('errorPasswordLength'))
+      return
+    }
+
     setLoading(true)
 
     try {
-      await signIn(email, password)
-      router.push('/dashboard')
-      router.refresh()
+      await signUp(email, password)
+      setSuccess(true)
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.')
+      setError(err.message || t('errorDefault'))
     } finally {
       setLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className={styles.authPage}>
+        <div className={styles.successContainer}>
+          <div className={styles.successCard}>
+            <div className={styles.successIcon}>
+              <CheckCircle size={64} />
+            </div>
+            <h1>{t('success.title')}</h1>
+            <p>{t('success.description', { email })}</p>
+            <Link href="/login" className={styles.successBtn}>
+              {t('success.goToLogin')}
+              <ArrowRight size={20} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -39,16 +71,11 @@ export default function LoginPage() {
             <Link href="/" className={styles.logo}>
               <div className={styles.logoIcon}>
                 <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="url(#logoGradientLogin)" />
-                  <path
-                    d="M9 12h14M9 16h10M9 20h6"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
+                  <rect width="32" height="32" rx="8" fill="url(#logoGradientSignup)" />
+                  <path d="M9 12h14M9 16h10M9 20h6" stroke="white" strokeWidth="2" strokeLinecap="round" />
                   <circle cx="22" cy="18" r="4" stroke="white" strokeWidth="2" />
                   <defs>
-                    <linearGradient id="logoGradientLogin" x1="0" y1="0" x2="32" y2="32">
+                    <linearGradient id="logoGradientSignup" x1="0" y1="0" x2="32" y2="32">
                       <stop stopColor="#22c55e" />
                       <stop offset="1" stopColor="#16a34a" />
                     </linearGradient>
@@ -57,8 +84,8 @@ export default function LoginPage() {
               </div>
               <span className={styles.logoText}>Fintia</span>
             </Link>
-            <h1>Bienvenido de nuevo</h1>
-            <p>Ingresa tus credenciales para acceder a tu cuenta</p>
+            <h1>{t('title')}</h1>
+            <p>{t('subtitle')}</p>
           </div>
 
           {error && (
@@ -70,7 +97,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className={styles.authForm}>
             <div className={styles.inputGroup}>
-              <label htmlFor="email">Correo electrónico</label>
+              <label htmlFor="email">{t('email')}</label>
               <div className={styles.inputWrapper}>
                 <Mail size={20} className={styles.inputIcon} />
                 <input
@@ -78,7 +105,7 @@ export default function LoginPage() {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder={t('emailPlaceholder')}
                   required
                   disabled={loading}
                 />
@@ -86,7 +113,7 @@ export default function LoginPage() {
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="password">Contraseña</label>
+              <label htmlFor="password">{t('password')}</label>
               <div className={styles.inputWrapper}>
                 <Lock size={20} className={styles.inputIcon} />
                 <input
@@ -94,26 +121,46 @@ export default function LoginPage() {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   required
                   disabled={loading}
                 />
               </div>
             </div>
 
-            <div className={styles.forgotPassword}>
-              <a href="#">¿Olvidaste tu contraseña?</a>
+            <div className={styles.inputGroup}>
+              <label htmlFor="confirmPassword">{t('confirmPassword')}</label>
+              <div className={styles.inputWrapper}>
+                <Lock size={20} className={styles.inputIcon} />
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder={t('confirmPasswordPlaceholder')}
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className={styles.terms}>
+              <p>
+                {t('terms')}{' '}
+                <a href="#">{t('termsLink')}</a> {t('and')}{' '}
+                <a href="#">{t('privacyLink')}</a>.
+              </p>
             </div>
 
             <button type="submit" className={styles.submitBtn} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 size={20} className={styles.spinner} />
-                  Iniciando sesión...
+                  {t('submitting')}
                 </>
               ) : (
                 <>
-                  Iniciar sesión
+                  {t('submit')}
                   <ArrowRight size={20} />
                 </>
               )}
@@ -122,31 +169,28 @@ export default function LoginPage() {
 
           <div className={styles.authFooter}>
             <p>
-              ¿No tienes cuenta?{' '}
-              <Link href="/signup">Crear cuenta gratis</Link>
+              {t('hasAccount')}{' '}
+              <Link href="/login">{t('login')}</Link>
             </p>
           </div>
         </div>
 
         <div className={styles.authVisual}>
           <div className={styles.visualContent}>
-            <h2>Controla tu dinero sin complicaciones</h2>
-            <p>
-              Únete a miles de personas que ya están simplificando sus finanzas
-              personales con Fintia.
-            </p>
+            <h2>{t('visual.title')}</h2>
+            <p>{t('visual.description')}</p>
             <div className={styles.features}>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>✓</span>
-                Registro de gastos simple
+                {t('visual.feature1')}
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>✓</span>
-                Visualización clara
+                {t('visual.feature2')}
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>✓</span>
-                Alertas inteligentes
+                {t('visual.feature3')}
               </div>
             </div>
           </div>

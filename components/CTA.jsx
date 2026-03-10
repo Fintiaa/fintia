@@ -1,7 +1,10 @@
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import styles from './CTA.module.css';
 
-const CTA = () => {
+const CTA = async () => {
+  const t = await getTranslations('CTA');
+
   return (
     <section className={styles.cta}>
       <div className="container">
@@ -15,25 +18,20 @@ const CTA = () => {
             <div className={styles.ctaIcon}>
               <Sparkles size={32} />
             </div>
-            <h2>Empieza a tomar control de tu dinero hoy</h2>
-            <p>
-              Únete a miles de personas que ya están simplificando sus finanzas
-              personales. Sin complicaciones, sin compromisos.
-            </p>
+            <h2>{t('title')}</h2>
+            <p>{t('description')}</p>
             <div className={styles.ctaActions}>
               <a href="#" className="btn btn-primary">
-                Crear cuenta gratis
+                {t('btn')}
                 <ArrowRight size={18} />
               </a>
-              <span className={styles.ctaNote}>
-                Configuración en menos de 2 minutos
-              </span>
+              <span className={styles.ctaNote}>{t('note')}</span>
             </div>
 
             <div className={styles.benefits}>
-              <span className={styles.benefit}>✓ Sin tarjeta de crédito</span>
-              <span className={styles.benefit}>✓ Cancela cuando quieras</span>
-              <span className={styles.benefit}>✓ Soporte incluido</span>
+              <span className={styles.benefit}>✓ {t('b1')}</span>
+              <span className={styles.benefit}>✓ {t('b2')}</span>
+              <span className={styles.benefit}>✓ {t('b3')}</span>
             </div>
           </div>
         </div>
