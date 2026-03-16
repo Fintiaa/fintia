@@ -139,7 +139,8 @@
     "reports": "Reportes",
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
-    "newExpense": "Nuevo gasto"
+    "newExpense": "Nuevo gasto",
+    "recurring": "Recurrentes"
   },
   "Header": {
     "features": "Funciones",

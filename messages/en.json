@@ -139,7 +139,8 @@
     "reports": "Reports",
     "settings": "Settings",
     "signOut": "Sign out",
-    "newExpense": "New expense"
+    "newExpense": "New expense",
+    "recurring": "Recurring"
   },
   "Header": {
     "features": "Features",

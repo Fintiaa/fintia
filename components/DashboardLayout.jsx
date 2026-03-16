@@ -8,6 +8,7 @@ import {
   Wallet,
   PieChart,
   TrendingUp,
+  RefreshCw,
   Bell,
   Settings,
   LogOut,
@@ -30,10 +31,11 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
 
   const navItems = [
-    { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard' },
-    { icon: Wallet, label: t('transactions'), path: '/dashboard/transactions' },
-    { icon: PieChart, label: t('budgets'), path: '/dashboard/budgets' },
-    { icon: TrendingUp, label: t('reports'), path: '/dashboard/reports' },
+    { icon: LayoutDashboard, label: t('dashboard'),    path: '/dashboard' },
+    { icon: Wallet,          label: t('transactions'), path: '/dashboard/transactions' },
+    { icon: RefreshCw,       label: t('recurring'),    path: '/dashboard/recurring' },
+    { icon: PieChart,        label: t('budgets'),      path: '/dashboard/budgets' },
+    { icon: TrendingUp,      label: t('reports'),      path: '/dashboard/reports' },
   ];
 
   const handleSignOut = async () => {
