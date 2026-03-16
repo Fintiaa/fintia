@@ -33,10 +33,6 @@ RESPONDE ÚNICAMENTE con un JSON válido (sin markdown, sin texto extra):
   "message": "mensaje corto y amigable en español colombiano casual confirmando lo que entendiste (máx 1 oración)"
 }`
 
-export async function GET() {
-  return Response.json({ groqKeySet: !!process.env.GROQ_API_KEY })
-}
-
 export async function POST(request) {
   try {
     const { text, imageBase64, mimeType } = await request.json()

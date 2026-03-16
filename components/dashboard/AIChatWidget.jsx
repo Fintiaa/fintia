@@ -108,13 +108,13 @@ export default function AIChatWidget({ onSuccess }) {
       }
 
       if (data.error) {
-        addMsg({ role: 'assistant', type: 'text', content: `😅 ${data.error}` })
+        addMsg({ role: 'assistant', type: 'text', content: '😕 Nuestro AI está teniendo problemas... estamos trabajando para corregirlo. ¡Intenta de nuevo en un momento!' })
       } else {
         addMsg({ role: 'assistant', type: 'transaction', content: data.message, parsed: data })
       }
     } catch (err) {
       console.error('AIChatWidget error:', err)
-      addMsg({ role: 'assistant', type: 'text', content: `😕 Error: ${err?.message || 'desconocido'}` })
+      addMsg({ role: 'assistant', type: 'text', content: '😕 Nuestro AI está teniendo problemas... estamos trabajando para corregirlo. ¡Intenta de nuevo en un momento!' })
     } finally {
       setIsLoading(false)
     }
@@ -135,7 +135,7 @@ export default function AIChatWidget({ onSuccess }) {
       addMsg({ role: 'assistant', type: 'text', content: '✅ ¡Listo! Transacción registrada. ¿Hay algo más?' })
       onSuccess?.()
     } catch {
-      addMsg({ role: 'assistant', type: 'text', content: '❌ Error al guardar. Intenta de nuevo.' })
+      addMsg({ role: 'assistant', type: 'text', content: '😕 No pudimos guardar la transacción. ¡Intenta de nuevo!' })
     }
   }
 
