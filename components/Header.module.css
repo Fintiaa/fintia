@@ -19,7 +19,7 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   text-decoration: none;
 }
 
@@ -30,7 +30,7 @@
 }
 
 .logoText {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 700;
   color: var(--gray-900);
   letter-spacing: -0.02em;

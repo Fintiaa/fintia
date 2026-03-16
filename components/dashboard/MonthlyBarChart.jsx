@@ -51,8 +51,8 @@ export default function MonthlyBarChart({ data, incomeLabel, expensesLabel }) {
             <span style={{ fontSize: '0.78rem', color: '#374151' }}>{value}</span>
           )}
         />
-        <Bar name={incomeLabel} dataKey="income" fill="#7ab98d" radius={[4, 4, 0, 0]} />
-        <Bar name={expensesLabel} dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
+        <Bar name={incomeLabel} dataKey="income" fill="#9AC2C9" radius={[4, 4, 0, 0]} />
+        <Bar name={expensesLabel} dataKey="expenses" fill="#FFCB47" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )

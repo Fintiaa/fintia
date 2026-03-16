@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, X, LogOut } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useTranslations } from 'next-intl'
@@ -24,19 +25,7 @@ const Header = () => {
     <header className={styles.header}>
       <div className={`container ${styles.headerContainer}`}>
         <Link href="/" className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="url(#logoGradient)" />
-              <path d="M9 12h14M9 16h10M9 20h6" stroke="white" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="22" cy="18" r="4" stroke="white" strokeWidth="2" />
-              <defs>
-                <linearGradient id="logoGradient" x1="0" y1="0" x2="32" y2="32">
-                  <stop stopColor="#22c55e" />
-                  <stop offset="1" stopColor="#16a34a" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
+          <Image src="/images/LogoFintia.png" alt="Fintia" width={36} height={36} style={{ objectFit: 'contain' }} />
           <span className={styles.logoText}>Fintia</span>
         </Link>
 

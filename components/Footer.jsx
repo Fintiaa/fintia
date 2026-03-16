@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Mail, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import styles from './Footer.module.css';
@@ -11,19 +12,7 @@ const Footer = async () => {
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
             <a href="/" className={styles.logo}>
-              <div className={styles.logoIcon}>
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="url(#logoGradientFooter)" />
-                  <path d="M9 12h14M9 16h10M9 20h6" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="22" cy="18" r="4" stroke="white" strokeWidth="2" />
-                  <defs>
-                    <linearGradient id="logoGradientFooter" x1="0" y1="0" x2="32" y2="32">
-                      <stop stopColor="#22c55e" />
-                      <stop offset="1" stopColor="#16a34a" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
+              <Image src="/images/LogoFintia.png" alt="Fintia" width={36} height={36} style={{ objectFit: 'contain' }} />
               <span className={styles.logoText}>Fintia</span>
             </a>
             <p className={styles.brandDescription}>{t('description')}</p>
