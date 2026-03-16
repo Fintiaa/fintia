@@ -1,55 +1,32 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Plus, Search, Edit2, Trash2, X } from 'lucide-react'
 import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
-import { getTransactions, deleteTransaction } from '@/lib/supabase/transactions'
 import { getCategoryById, CATEGORIES } from '@/lib/data/categories'
+import { useTransactions } from '@/lib/hooks/useTransactions'
 import { useTranslations } from 'next-intl'
 import styles from './page.module.css'
 
 export default function TransactionsPage() {
   const t = useTranslations('Transactions')
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  const [filterType, setFilterType] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
-  const [filterFrom, setFilterFrom] = useState('')
-  const [filterTo, setFilterTo] = useState('')
-  const [search, setSearch] = useState('')
+  const {
+    transactions: displayed,
+    loading,
+    error,
+    filters,
+    hasActiveFilters,
+    setFilter,
+    clearFilters,
+    deleteTransaction,
+    refetch,
+  } = useTransactions()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
-
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await getTransactions({
-        filters: {
-          type: filterType || undefined,
-          category_id: filterCategory || undefined,
-          from: filterFrom || undefined,
-          to: filterTo || undefined,
-        },
-      })
-      setTransactions(data)
-    } catch (err) {
-      setError(t('errorLoad'))
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [filterType, filterCategory, filterFrom, filterTo, t])
-
-  useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
 
   const handleEdit = (tx) => {
     setEditingTransaction(tx)
@@ -61,7 +38,6 @@ export default function TransactionsPage() {
     try {
       await deleteTransaction(id)
       setDeletingId(null)
-      fetchTransactions()
     } catch (err) {
       console.error(err)
     } finally {
@@ -73,26 +49,6 @@ export default function TransactionsPage() {
     setModalOpen(false)
     setEditingTransaction(null)
   }
-
-  const clearFilters = () => {
-    setFilterType('')
-    setFilterCategory('')
-    setFilterFrom('')
-    setFilterTo('')
-    setSearch('')
-  }
-
-  const hasActiveFilters = filterType || filterCategory || filterFrom || filterTo || search
-
-  const displayed = transactions.filter((tx) => {
-    if (!search) return true
-    const cat = getCategoryById(tx.category_id)
-    const s = search.toLowerCase()
-    return (
-      tx.description?.toLowerCase().includes(s) ||
-      cat?.name.toLowerCase().includes(s)
-    )
-  })
 
   const fmt = (amount) =>
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount)
@@ -134,15 +90,15 @@ export default function TransactionsPage() {
             <input
               type="text"
               placeholder={t('searchPlaceholder')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={filters.search}
+              onChange={(e) => setFilter('search', e.target.value)}
               className={styles.searchInput}
             />
           </div>
           <div className={styles.filterRow}>
             <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              value={filters.type}
+              onChange={(e) => setFilter('type', e.target.value)}
               className={styles.filterSelect}
             >
               <option value="">{t('allTypes')}</option>
@@ -150,8 +106,8 @@ export default function TransactionsPage() {
               <option value="expense">{t('expenses')}</option>
             </select>
             <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+              value={filters.category_id}
+              onChange={(e) => setFilter('category_id', e.target.value)}
               className={styles.filterSelect}
             >
               <option value="">{t('allCategories')}</option>
@@ -163,14 +119,14 @@ export default function TransactionsPage() {
             </select>
             <input
               type="date"
-              value={filterFrom}
-              onChange={(e) => setFilterFrom(e.target.value)}
+              value={filters.from}
+              onChange={(e) => setFilter('from', e.target.value)}
               className={styles.filterInput}
             />
             <input
               type="date"
-              value={filterTo}
-              onChange={(e) => setFilterTo(e.target.value)}
+              value={filters.to}
+              onChange={(e) => setFilter('to', e.target.value)}
               className={styles.filterInput}
             />
             {hasActiveFilters && (
@@ -288,7 +244,7 @@ export default function TransactionsPage() {
         <TransactionModal
           isOpen={modalOpen}
           onClose={handleModalClose}
-          onSuccess={fetchTransactions}
+          onSuccess={refetch}
           transaction={editingTransaction}
         />
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight, PiggyBank } from 'lucide-react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
@@ -8,69 +8,28 @@ import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
 import ExpensesPieChart from '@/components/dashboard/ExpensesPieChart'
 import MonthlyBarChart from '@/components/dashboard/MonthlyBarChart'
-import { getStatsForPeriod, getTransactions, getCategoryExpenses, getMonthlyHistory } from '@/lib/supabase/transactions'
 import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
 import styles from './page.module.css'
-
-function getDateRange(period) {
-  const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  if (period === 'week') {
-    const day = now.getDay()
-    const diff = day === 0 ? -6 : 1 - day
-    const monday = new Date(now)
-    monday.setDate(now.getDate() + diff)
-    return { from: monday.toISOString().split('T')[0], to: today }
-  }
-  if (period === 'year') {
-    return { from: `${now.getFullYear()}-01-01`, to: today }
-  }
-  // month
-  return {
-    from: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`,
-    to: today,
-  }
-}
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
   const locale = useLocale()
   const { user, profile } = useAuth()
-
-  const [period, setPeriod] = useState('month')
-  const [stats, setStats] = useState({ income: 0, expenses: 0, balance: 0 })
-  const [categoryData, setCategoryData] = useState({})
-  const [historyData, setHistoryData] = useState([])
-  const [recent, setRecent] = useState([])
-  const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
 
-  const fetchData = useCallback(async () => {
-    setLoading(true)
-    const { from, to } = getDateRange(period)
-    const chartLocale = locale === 'en' ? 'en-US' : 'es-MX'
-    try {
-      const [periodStats, catData, history, txns] = await Promise.all([
-        getStatsForPeriod(from, to),
-        getCategoryExpenses(from, to),
-        getMonthlyHistory(6, chartLocale),
-        getTransactions({ limit: 5 }),
-      ])
-      setStats(periodStats)
-      setCategoryData(catData)
-      setHistoryData(history)
-      setRecent(txns)
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [period, locale])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  const {
+    period,
+    setPeriod,
+    stats,
+    categoryData,
+    historyData,
+    recent,
+    loading,
+    savingsRate,
+    refetch: fetchData,
+  } = useDashboardStats()
 
   const fmt = (n) =>
     new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-MX', { style: 'currency', currency: 'MXN' }).format(n)
@@ -86,9 +45,6 @@ export default function DashboardPage() {
     if (date.getTime() === yest.getTime()) return t('yesterday')
     return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'es-MX', { day: 'numeric', month: 'short' })
   }
-
-  const savingsRate =
-    stats.income > 0 ? Math.round(((stats.income - stats.expenses) / stats.income) * 100) : null
 
   const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'usuario'
 

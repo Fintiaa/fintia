@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { getCategoriesByType } from '@/lib/data/categories'
 import { createTransaction, updateTransaction } from '@/lib/supabase/transactions'
 import { useTranslations } from 'next-intl'
+import CurrencyInput from './CurrencyInput'
 import styles from './TransactionModal.module.css'
 
 export default function TransactionModal({ isOpen, onClose, onSuccess, transaction = null }) {
@@ -111,14 +112,11 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
               <label htmlFor="modal-amount">{t('amount')}</label>
               <div className={styles.inputWrapper}>
                 <span className={styles.prefix}>$</span>
-                <input
+                <CurrencyInput
                   id="modal-amount"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
+                  onChange={setAmount}
+                  placeholder="0"
                   required
                 />
               </div>
