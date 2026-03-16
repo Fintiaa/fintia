@@ -1,47 +1,79 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight, PiggyBank } from 'lucide-react'
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
-import { getTransactions, getMonthlyStats } from '@/lib/supabase/transactions'
+import ExpensesPieChart from '@/components/dashboard/ExpensesPieChart'
+import MonthlyBarChart from '@/components/dashboard/MonthlyBarChart'
+import { getStatsForPeriod, getTransactions, getCategoryExpenses, getMonthlyHistory } from '@/lib/supabase/transactions'
 import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { useTranslations } from 'next-intl'
 import styles from './page.module.css'
+
+function getDateRange(period) {
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  if (period === 'week') {
+    const day = now.getDay()
+    const diff = day === 0 ? -6 : 1 - day
+    const monday = new Date(now)
+    monday.setDate(now.getDate() + diff)
+    return { from: monday.toISOString().split('T')[0], to: today }
+  }
+  if (period === 'year') {
+    return { from: `${now.getFullYear()}-01-01`, to: today }
+  }
+  // month
+  return {
+    from: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`,
+    to: today,
+  }
+}
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
+  const locale = useLocale()
   const { user, profile } = useAuth()
+
+  const [period, setPeriod] = useState('month')
   const [stats, setStats] = useState({ income: 0, expenses: 0, balance: 0 })
+  const [categoryData, setCategoryData] = useState({})
+  const [historyData, setHistoryData] = useState([])
   const [recent, setRecent] = useState([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
-    const now = new Date()
+    const { from, to } = getDateRange(period)
+    const chartLocale = locale === 'en' ? 'en-US' : 'es-MX'
     try {
-      const [monthStats, txns] = await Promise.all([
-        getMonthlyStats(now.getFullYear(), now.getMonth() + 1),
+      const [periodStats, catData, history, txns] = await Promise.all([
+        getStatsForPeriod(from, to),
+        getCategoryExpenses(from, to),
+        getMonthlyHistory(6, chartLocale),
         getTransactions({ limit: 5 }),
       ])
-      setStats(monthStats)
+      setStats(periodStats)
+      setCategoryData(catData)
+      setHistoryData(history)
       setRecent(txns)
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [period, locale])
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [fetchData])
 
   const fmt = (n) =>
-    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n)
+    new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-MX', { style: 'currency', currency: 'MXN' }).format(n)
 
   const fmtDate = (str) => {
     const [y, m, d] = str.split('-')
@@ -52,12 +84,15 @@ export default function DashboardPage() {
     yest.setDate(yest.getDate() - 1)
     if (date.getTime() === today.getTime()) return t('today')
     if (date.getTime() === yest.getTime()) return t('yesterday')
-    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
+    return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'es-MX', { day: 'numeric', month: 'short' })
   }
 
-  const now = new Date()
-  const monthLabel = now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+  const savingsRate =
+    stats.income > 0 ? Math.round(((stats.income - stats.expenses) / stats.income) * 100) : null
+
   const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'usuario'
+
+  const periodLabel = { week: t('periodWeek'), month: t('periodMonth'), year: t('periodYear') }[period]
 
   const statsCards = [
     {
@@ -74,7 +109,7 @@ export default function DashboardPage() {
       icon: TrendingUp,
       color: 'blue',
       changeType: 'positive',
-      change: t('thisMonth'),
+      change: periodLabel,
     },
     {
       title: t('expensesCard'),
@@ -82,7 +117,15 @@ export default function DashboardPage() {
       icon: CreditCard,
       color: 'red',
       changeType: 'negative',
-      change: t('thisMonth'),
+      change: periodLabel,
+    },
+    {
+      title: t('savingsCard'),
+      value: savingsRate !== null ? `${savingsRate}%` : '—',
+      icon: PiggyBank,
+      color: 'purple',
+      changeType: savingsRate !== null && savingsRate >= 20 ? 'positive' : 'negative',
+      change: savingsRate !== null && savingsRate >= 20 ? t('savingsGood') : t('savingsLow'),
     },
   ]
 
@@ -93,12 +136,23 @@ export default function DashboardPage() {
         <div className={styles.pageHeader}>
           <div>
             <h1>{t('greeting', { name: userName })}</h1>
-            <p>{t('summary', { month: monthLabel })}</p>
+            <p>{t('summary', { month: periodLabel })}</p>
           </div>
-          <button className={styles.newTransactionBtn} onClick={() => setModalOpen(true)}>
-            <Plus size={18} />
-            {t('newTransaction')}
-          </button>
+          <div className={styles.headerActions}>
+            <select
+              className={styles.periodSelect}
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
+              <option value="week">{t('periodWeek')}</option>
+              <option value="month">{t('periodMonth')}</option>
+              <option value="year">{t('periodYear')}</option>
+            </select>
+            <button className={styles.newTransactionBtn} onClick={() => setModalOpen(true)}>
+              <Plus size={18} />
+              {t('newTransaction')}
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -124,6 +178,39 @@ export default function DashboardPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Charts */}
+        <div className={styles.chartsGrid}>
+          {/* Bar chart: income vs expenses last 6 months */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2>{t('incomeVsExpenses')}</h2>
+              <span className={styles.chartSubtitle}>{t('last6Months')}</span>
+            </div>
+            {loading ? (
+              <div className={styles.chartSkeleton} />
+            ) : (
+              <MonthlyBarChart
+                data={historyData}
+                incomeLabel={t('incomeLabel')}
+                expensesLabel={t('expensesLabel')}
+              />
+            )}
+          </div>
+
+          {/* Pie chart: expenses by category */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2>{t('expensesByCategory')}</h2>
+              <span className={styles.chartSubtitle}>{periodLabel}</span>
+            </div>
+            {loading ? (
+              <div className={styles.chartSkeleton} />
+            ) : (
+              <ExpensesPieChart data={categoryData} emptyText={t('noExpenses')} />
+            )}
+          </div>
         </div>
 
         {/* Recent Transactions */}

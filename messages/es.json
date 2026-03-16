@@ -74,7 +74,19 @@
     "addExpense": "Agregar Gasto",
     "addIncome": "Agregar Ingreso",
     "transactions": "Transacciones",
-    "reports": "Reportes"
+    "reports": "Reportes",
+    "periodWeek": "Esta semana",
+    "periodMonth": "Este mes",
+    "periodYear": "Este año",
+    "savingsCard": "Tasa de Ahorro",
+    "savingsGood": "Buen ahorro",
+    "savingsLow": "Bajo ahorro",
+    "incomeVsExpenses": "Ingresos vs Gastos",
+    "last6Months": "Últimos 6 meses",
+    "incomeLabel": "Ingresos",
+    "expensesLabel": "Gastos",
+    "expensesByCategory": "Gastos por Categoría",
+    "noExpenses": "Sin gastos en este período"
   },
   "Transactions": {
     "title": "Transacciones",

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslations } from 'next-intl';
+import AIChatWidget from '@/components/dashboard/AIChatWidget';
 import styles from './DashboardLayout.module.css';
 
 export default function DashboardLayout({ children }) {
@@ -163,6 +164,8 @@ export default function DashboardLayout({ children }) {
           {children}
         </main>
       </div>
+
+      <AIChatWidget />
     </div>
   );
 }

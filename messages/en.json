@@ -74,7 +74,19 @@
     "addExpense": "Add Expense",
     "addIncome": "Add Income",
     "transactions": "Transactions",
-    "reports": "Reports"
+    "reports": "Reports",
+    "periodWeek": "This week",
+    "periodMonth": "This month",
+    "periodYear": "This year",
+    "savingsCard": "Savings Rate",
+    "savingsGood": "Good savings",
+    "savingsLow": "Low savings",
+    "incomeVsExpenses": "Income vs Expenses",
+    "last6Months": "Last 6 months",
+    "incomeLabel": "Income",
+    "expensesLabel": "Expenses",
+    "expensesByCategory": "Expenses by Category",
+    "noExpenses": "No expenses in this period"
   },
   "Transactions": {
     "title": "Transactions",

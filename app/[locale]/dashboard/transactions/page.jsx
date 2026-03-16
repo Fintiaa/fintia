@@ -291,6 +291,7 @@ export default function TransactionsPage() {
           onSuccess={fetchTransactions}
           transaction={editingTransaction}
         />
+
       </div>
     </DashboardLayout>
   )
