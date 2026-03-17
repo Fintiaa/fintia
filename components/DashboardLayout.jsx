@@ -56,8 +56,10 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (!isPremium || !user) return
 
+    const refresh = () => getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
+
     // Initial fetch
-    getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
+    refresh()
 
     // Realtime subscription — updates badge instantly when new alert arrives
     const supabase = createClient()
@@ -68,12 +70,16 @@ export default function DashboardLayout({ children }) {
         schema: 'public',
         table: 'alerts',
         filter: `user_id=eq.${user.id}`,
-      }, () => {
-        getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
-      })
+      }, refresh)
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    // Polling fallback every 30s in case Realtime is not enabled on the table
+    const poll = setInterval(refresh, 30_000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(poll)
+    }
   }, [isPremium, user]);
 
   const handleSignOut = async () => {
