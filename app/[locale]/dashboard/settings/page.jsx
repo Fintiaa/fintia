@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone } from 'lucide-react'
+import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone, Bell } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { updateProfile } from '@/lib/supabase/profile'
+import ReminderToggle from '@/components/reminders/ReminderToggle'
 import styles from './page.module.css'
 
 const PLANS = [
@@ -240,6 +241,18 @@ export default function SettingsPage() {
           <p className={styles.planNote}>
             * Los pagos no están habilitados aún. Puedes cambiar de plan libremente durante el desarrollo.
           </p>
+        </div>
+
+        {/* Recordatorios */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>
+            <Bell size={18} style={{ display: 'inline', marginRight: 8 }} />
+            Recordatorios
+          </h2>
+          <p className={styles.hint} style={{ marginBottom: 16 }}>
+            Fintia te avisará cuando lleves más de 3 días sin registrar movimientos.
+          </p>
+          <ReminderToggle />
         </div>
 
         {/* WhatsApp */}

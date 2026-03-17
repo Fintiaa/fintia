@@ -13,7 +13,7 @@ export default function ReportsPage(){
   const { profile } = useAuth()
   const [data,setData] = useState(null)
 
-  if(profile?.plan !== "premium" && profile?.role !== "admin"){
+  if(profile?.subscription_tier !== "premium"){
     return (
       <div className={styles.upgradeCard}>
 
@@ -23,9 +23,9 @@ export default function ReportsPage(){
           Los reportes avanzados están disponibles solo para usuarios Premium.
         </p>
 
-        <button className={styles.upgradeButton}>
+        <a href="/dashboard/settings" className={styles.upgradeButton}>
           Hazte Premium
-        </button>
+        </a>
 
       </div>
     )

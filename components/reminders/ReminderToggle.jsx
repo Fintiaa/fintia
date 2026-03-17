@@ -1,36 +1,25 @@
-"use client"
+'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from 'react'
 
-export default function ReminderToggle(){
+export default function ReminderToggle() {
+  const [enabled, setEnabled] = useState(true)
 
-  const [enabled,setEnabled] = useState(()=>{
-    const saved = localStorage.getItem("reminders")
-    return saved !== null ? saved === "true" : true
-  })
+  useEffect(() => {
+    const saved = localStorage.getItem('reminders')
+    if (saved !== null) setEnabled(saved === 'true')
+  }, [])
 
-  const toggle = ()=>{
-
+  const toggle = () => {
     const newValue = !enabled
-
     setEnabled(newValue)
-
-    localStorage.setItem("reminders",newValue)
-
+    localStorage.setItem('reminders', String(newValue))
   }
 
-  return(
-
-    <label className="reminderToggle">
-
-      Recordatorios
-
-      <input
-        type="checkbox"
-        checked={enabled}
-        onChange={toggle}
-      />
-
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+      <input type="checkbox" checked={enabled} onChange={toggle} />
+      {enabled ? 'Activados' : 'Desactivados'}
     </label>
   )
 }

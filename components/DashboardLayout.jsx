@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   Lock,
   Crown,
+  Target,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -50,6 +51,7 @@ export default function DashboardLayout({ children }) {
 
   const premiumNavItems = [
     { icon: AlertTriangle, label: 'Alertas inteligentes', path: '/dashboard/alerts' },
+    { icon: Target,        label: 'Objetivos de ahorro', path: '/dashboard/goals' },
     { icon: Mail,          label: 'Sincronizar Gmail',    path: '/dashboard/sync' },
   ];
 
