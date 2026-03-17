@@ -133,6 +133,45 @@
   color: var(--primary-700);
 }
 
+.premiumSection {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.premiumSectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 16px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #d97706;
+}
+
+.navItemLocked {
+  opacity: 0.5;
+  cursor: pointer;
+  position: relative;
+}
+
+.navItemLocked:hover {
+  background: #fef9ec;
+  color: #92400e;
+  opacity: 0.75;
+}
+
+.lockIcon {
+  margin-left: auto;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
 .sidebarFooter {
   padding: 16px 12px;
   border-top: 1px solid var(--gray-100);

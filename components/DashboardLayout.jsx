@@ -18,6 +18,8 @@ import {
   Plus,
   Mail,
   AlertTriangle,
+  Lock,
+  Crown,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -42,11 +44,12 @@ export default function DashboardLayout({ children }) {
     { icon: Wallet,          label: t('transactions'), path: '/dashboard/transactions' },
     { icon: RefreshCw,       label: t('recurring'),    path: '/dashboard/recurring' },
     { icon: PieChart,        label: t('budgets'),      path: '/dashboard/budgets' },
-    ...(isPremium ? [
-      { icon: AlertTriangle, label: 'Alertas', path: '/dashboard/alerts' },
-      { icon: Mail,          label: 'Sincronizar', path: '/dashboard/sync' },
-    ] : []),
     { icon: TrendingUp,      label: t('reports'),      path: '/dashboard/reports' },
+  ];
+
+  const premiumNavItems = [
+    { icon: AlertTriangle, label: 'Alertas inteligentes', path: '/dashboard/alerts' },
+    { icon: Mail,          label: 'Sincronizar Gmail',    path: '/dashboard/sync' },
   ];
 
   useEffect(() => {
@@ -114,6 +117,38 @@ export default function DashboardLayout({ children }) {
               <span>{item.label}</span>
             </Link>
           ))}
+
+          {/* Premium items */}
+          <div className={styles.premiumSection}>
+            <span className={styles.premiumSectionLabel}>
+              <Crown size={11} /> Premium
+            </span>
+            {premiumNavItems.map((item) =>
+              isPremium ? (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`${styles.navItem} ${pathname === item.path ? styles.navItemActive : ''}`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <Link
+                  key={item.path}
+                  href="/dashboard/settings"
+                  className={`${styles.navItem} ${styles.navItemLocked}`}
+                  onClick={() => setSidebarOpen(false)}
+                  title="Actualiza a Premium para acceder"
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                  <Lock size={13} className={styles.lockIcon} />
+                </Link>
+              )
+            )}
+          </div>
         </nav>
 
         <div className={styles.sidebarFooter}>
@@ -182,7 +217,7 @@ export default function DashboardLayout({ children }) {
         </main>
       </div>
 
-      <AIChatWidget />
+      {isPremium && <AIChatWidget />}
     </div>
   );
 }
