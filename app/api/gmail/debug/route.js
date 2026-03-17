@@ -63,7 +63,7 @@ export async function GET() {
     }
 
     // Step 6: Search with domain-based query (same as fetcher)
-    const BANK_DOMAINS = ['bancolombia', 'notificacionesbancolombia', 'davivienda', 'nequi', 'daviplata', 'bbva.com.co']
+    const BANK_DOMAINS = ['bancolombia', 'notificacionesbancolombia', 'davivienda', 'nequi', 'daviplata', 'bbva.com.co', 'lulobank']
     const senderQuery = BANK_DOMAINS.map((d) => `from:${d}`).join(' OR ')
     const fullQuery = `(${senderQuery})`
 
