@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from "react"
 import GoalProgress from "./GoalProgress"
 import styles from "./goals.module.css"
