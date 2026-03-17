@@ -4,8 +4,11 @@ import { fetchBankEmails } from '@/lib/gmail/fetcher'
 import { parseEmailToTransaction } from '@/lib/gmail/parser'
 import { encrypt } from '@/lib/gmail/crypto'
 
-export async function POST() {
+export async function POST(request) {
   try {
+    const url = new URL(request.url)
+    const forceFullSync = url.searchParams.get('full') === 'true'
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -24,12 +27,21 @@ export async function POST() {
       return NextResponse.json({ error: 'Gmail no conectado' }, { status: 404 })
     }
 
-    // Calculate since date
-    const sinceDate = connection.last_sync_at
-      ? new Date(connection.last_sync_at).toISOString().split('T')[0].replace(/-/g, '/')
-      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, '/')
+    // Check if this is the first real sync (no synced emails yet)
+    const { count: syncedCount } = await supabase
+      .from('synced_emails')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
 
-    const { emails, newTokens } = await fetchBankEmails(connection, sinceDate)
+    // First sync or forced full sync: look back 90 days to get history
+    const isFirstSync = (syncedCount || 0) === 0 || forceFullSync
+    const sinceDate = isFirstSync
+      ? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, '/')
+      : connection.last_sync_at
+        ? new Date(connection.last_sync_at).toISOString().split('T')[0].replace(/-/g, '/')
+        : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, '/')
+
+    const { emails, newTokens } = await fetchBankEmails(connection, sinceDate, isFirstSync ? 100 : 50)
 
     // Get already-synced IDs for deduplication
     const { data: existingSynced } = await supabase
