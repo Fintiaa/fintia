@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import Link from 'next/link'
-import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
 import { getTransactions, getMonthlyStats } from '@/lib/supabase/transactions'
 import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useTranslations } from 'next-intl'
+import { Target } from "lucide-react"
 import styles from './page.module.css'
+import { getGoals } from "@/lib/supabase/goals"
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
+  const [goals,setGoals] = useState([])
 
   const fetchData = async () => {
     setLoading(true)
@@ -26,9 +28,11 @@ export default function DashboardPage() {
       const [monthStats, txns] = await Promise.all([
         getMonthlyStats(now.getFullYear(), now.getMonth() + 1),
         getTransactions({ limit: 5 }),
+        getGoals(3)
       ])
       setStats(monthStats)
       setRecent(txns)
+      setGoals(goals)
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
     } finally {
@@ -182,6 +186,61 @@ export default function DashboardPage() {
           )}
         </div>
 
+        {/* Goals */}
+<div className={styles.card}>
+
+  <div className={styles.cardHeader}>
+    <h2>Metas</h2>
+    <Link href="/dashboard/goals" className={styles.viewAll}>
+      Ver todas
+    </Link>
+  </div>
+
+  {goals.length === 0 ? (
+    <p className={styles.loadingText}>
+      No tienes metas todavía
+    </p>
+  ) : (
+
+    <div className={styles.goalsList}>
+
+      {goals.map(goal=>{
+
+        const percent = Math.min(
+          (goal.saved / goal.target) * 100,
+          100
+        )
+
+        return(
+
+          <div key={goal.id} className={styles.goalItem}>
+
+            <div className={styles.goalHeader}>
+              <span>{goal.name}</span>
+              <span>
+                ${goal.saved} / ${goal.target}
+              </span>
+            </div>
+
+            <div className={styles.goalBar}>
+              <div
+                className={styles.goalProgress}
+                style={{width:`${percent}%`}}
+              />
+            </div>
+
+          </div>
+
+        )
+
+      })}
+
+    </div>
+
+  )}
+
+</div>
+
         {/* Quick Actions */}
         <div className={styles.quickActions}>
           <h3>{t('quickActions')}</h3>
@@ -201,6 +260,10 @@ export default function DashboardPage() {
             <Link href="/dashboard/reports" className={styles.actionCard}>
               <span className={styles.actionIcon}>📊</span>
               <span>{t('reports')}</span>
+            </Link>
+             <Link href="/dashboard/goals" className={styles.actionCard}>
+                <Target size={18}/>
+                <span>{t('goals')}</span>
             </Link>
           </div>
         </div>

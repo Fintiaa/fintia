@@ -39,6 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_type
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE goals ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para profiles (recrear si ya existen)
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
@@ -72,6 +73,23 @@ CREATE POLICY "Users can update own transactions"
 CREATE POLICY "Users can delete own transactions"
   ON transactions FOR DELETE USING (auth.uid() = user_id);
 
+-- Políticas para goals
+DROP POLICY IF EXISTS "Users can view own goals" ON goals;
+DROP POLICY IF EXISTS "Users can insert own goals" ON goals;
+DROP POLICY IF EXISTS "Users can update own goals" ON goals;
+DROP POLICY IF EXISTS "Users can delete own goals" ON goals;
+
+CREATE POLICY "Users can view own goals"
+  ON goals FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own goals"
+  ON goals FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own goals"
+  ON goals FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own goals"
+  ON goals FOR DELETE USING (auth.uid() = user_id);
 -- =============================================
 -- Trigger: auto-crear perfil al registrarse
 -- =============================================
@@ -95,3 +113,19 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================
+-- Tabla de metas de ahorro
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS goals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  target DECIMAL(12,2) NOT NULL,
+  saved DECIMAL(12,2) DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_goals_user
+  ON goals(user_id);

@@ -74,7 +74,8 @@
     "addExpense": "Agregar Gasto",
     "addIncome": "Agregar Ingreso",
     "transactions": "Transacciones",
-    "reports": "Reportes"
+    "reports": "Reportes",
+    "goals": "Metas"
   },
   "Transactions": {
     "title": "Transacciones",
