@@ -34,14 +34,18 @@ export async function POST(request) {
       .eq('user_id', user.id)
 
     // First sync or forced full sync: look back 90 days to get history
-    const isFirstSync = (syncedCount || 0) === 0 || forceFullSync
+    const isFirstSync = (syncedCount || 0) < 5 || forceFullSync
     const sinceDate = isFirstSync
       ? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, '/')
       : connection.last_sync_at
         ? new Date(connection.last_sync_at).toISOString().split('T')[0].replace(/-/g, '/')
         : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, '/')
 
-    const { emails, newTokens } = await fetchBankEmails(connection, sinceDate, isFirstSync ? 100 : 50)
+    console.log('[Sync] forceFullSync:', forceFullSync, 'syncedCount:', syncedCount, 'isFirstSync:', isFirstSync, 'sinceDate:', sinceDate)
+
+    const { emails, newTokens } = await fetchBankEmails(connection, sinceDate, isFirstSync ? 200 : 50)
+
+    console.log('[Sync] Fetched', emails.length, 'emails from Gmail')
 
     // Get already-synced IDs for deduplication
     const { data: existingSynced } = await supabase
@@ -147,6 +151,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       summary: { total: newEmails.length, created, skipped, errors },
+      debug: { isFirstSync, sinceDate, emailsFetched: emails.length, alreadySynced: existingIds.size },
     })
   } catch (err) {
     console.error('Sync error:', err)
