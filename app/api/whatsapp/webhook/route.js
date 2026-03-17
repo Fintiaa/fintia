@@ -105,15 +105,16 @@ export async function POST(request) {
           source: 'manual',
         })
 
+        if (txError) {
+          console.error('Error saving confirmed transaction:', JSON.stringify(txError))
+          return twiml('Hubo un error al guardar 😕 Intenta de nuevo.')
+        }
+
+        // Only clear pending after successful insert
         await supabase
           .from('profiles')
           .update({ whatsapp_pending: null })
           .eq('id', profile.id)
-
-        if (txError) {
-          console.error('Error saving confirmed transaction:', JSON.stringify(txError))
-          return twiml(`Error: ${txError.code} - ${txError.message}`)
-        }
 
         return twiml(`✅ ¡Listo! Registré ${p.description} por ${fmt(p.amount)} en tu cuenta Fintia 💚`)
       }
@@ -167,7 +168,8 @@ export async function POST(request) {
       return twiml('No pude detectar el monto 🤔 Intenta siendo más específico, ej: _"Gasté 15.000 en el bus"_')
     }
 
-    const date = parsed.date || new Date().toISOString().split('T')[0]
+    const today = new Date().toISOString().split('T')[0]
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : today
     const pending = {
       type: parsed.type,
       amount,
