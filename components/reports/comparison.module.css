@@ -1,0 +1,88 @@
+.card{
+  background:white;
+  padding:30px;
+  border-radius:12px;
+  width:350px;
+  margin:40px auto;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card h2{
+  font-size:20px;
+  margin-bottom:20px;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.select{
+  flex:1;
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  margin-bottom:15px; 
+}
+
+.button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#6d8f7a;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.button:hover{
+  background:#5b7866;
+}
+
+.chartCard{
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  margin:40px auto;
+  max-width:600px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.chartTitle{
+  font-size:18px;
+  margin-bottom:20px;
+}
+.upgradeCard{
+  background:white;
+  padding:40px;
+  border-radius:12px;
+  max-width:500px;
+  margin:80px auto;
+  text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.upgradeCard h2{
+  margin-bottom:15px;
+}
+
+.upgradeCard p{
+  color:#666;
+  margin-bottom:20px;
+}
+
+.upgradeButton{
+  background:#6d8f7a;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.upgradeButton:hover{
+  background:#5b7866;
+}

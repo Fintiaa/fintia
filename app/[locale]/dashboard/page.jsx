@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight, PiggyBank, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
 import ExpensesPieChart from '@/components/dashboard/ExpensesPieChart'
 import MonthlyBarChart from '@/components/dashboard/MonthlyBarChart'
@@ -12,7 +11,12 @@ import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
 import { getAllBudgetsWithSpending } from '@/lib/supabase/budgets'
+import { useTranslations } from 'next-intl'
+import { Target } from "lucide-react"
 import styles from './page.module.css'
+import { checkInactivity } from "@/lib/reminders"
+import ReminderBanner from "@/components/reminders/ReminderBanner"
+import { sendReminderNotification, requestNotificationPermission } from "@/lib/notification"
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
@@ -20,6 +24,31 @@ export default function DashboardPage() {
   const { user, profile } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
 
+  const fetchData = async () => {
+    setLoading(true)
+    const now = new Date()
+    try {
+      const [monthStats, txns] = await Promise.all([
+        getMonthlyStats(now.getFullYear(), now.getMonth() + 1),
+        getTransactions({ limit: 5 })
+      ])
+      setStats(monthStats)
+      setRecent(txns)
+      if(txns.length > 0){
+
+        const inactive = checkInactivity(txns[0].date)
+        const enabled = localStorage.getItem("reminders") !== "false"
+        if(inactive && enabled){
+          setShowReminder(true)
+          sendReminderNotification()
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
   const {
     period,
     setPeriod,
@@ -50,7 +79,8 @@ export default function DashboardPage() {
       getAllBudgetsWithSpending()
         .then(setBudgets)
         .catch(() => {})
-    }
+      requestNotificationPermission()
+  }
   }
 
   const fmt = (n) =>
@@ -108,7 +138,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <DashboardLayout>
+     <div className={styles.dashboard}>
       <div className={styles.dashboard}>
         {/* Header */}
         <div className={styles.pageHeader}>
@@ -132,6 +162,8 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        {showReminder && <ReminderBanner />}
 
         {/* Stats Cards */}
         <div className={styles.statsGrid}>
@@ -303,6 +335,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        
 
         {/* Quick Actions */}
         <div className={styles.quickActions}>
@@ -324,6 +357,10 @@ export default function DashboardPage() {
               <span className={styles.actionIcon}>📊</span>
               <span>{t('reports')}</span>
             </Link>
+             <Link href="/dashboard/goals" className={styles.actionCard}>
+                <Target size={18}/>
+                <span>{t('goals')}</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -333,6 +370,6 @@ export default function DashboardPage() {
         onClose={() => setModalOpen(false)}
         onSuccess={handleTransactionSuccess}
       />
-    </DashboardLayout>
+    </div>
   )
 }
