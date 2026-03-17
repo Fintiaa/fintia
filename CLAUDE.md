@@ -773,6 +773,48 @@ STRIPE_WEBHOOK_SECRET=
 
 ---
 
-**Última actualización:** 2026-02-09
-**Versión:** 0.1.0 (Post-migración a Next.js)
+## 📋 Rúbrica de Evaluación (Criterios de Código)
+
+### Implementación UI — 25 pts
+El código React debe reflejar fielmente el diseño para las **3 × N funcionalidades** asignadas a cada integrante.
+
+**Requisitos:**
+- Componentes React por cada pantalla/funcionalidad de las HUs asignadas
+- Uso de CSS Modules para estilos (sin Tailwind, sin estilos inline masivos)
+- Internacionalización (i18n) con `next-intl`: todas las cadenas de texto deben estar en `messages/es.json` y `messages/en.json`
+- Accesibilidad básica (a11y): atributos `aria-*` donde corresponda, etiquetas `<label>` vinculadas a inputs, contraste de color adecuado
+- Diseño responsive (mobile-first)
+
+### Lógica y Hooks — 20 pts
+Uso de **hooks personalizados** (`lib/hooks/`) para manejar la navegación y estados complejos de las historias de usuario.
+
+**Requisitos:**
+- Cada integrante debe tener al menos **1 hook personalizado** por HU compleja (mínimo 3 hooks por persona)
+- Los hooks deben encapsular: llamadas a Supabase, estado de carga/error, lógica de negocio (filtros, cálculos, etc.)
+- Los componentes/páginas solo deben contener JSX y llamar al hook — **no lógica de fetch directamente en los componentes**
+- Patrón: `useNombreFeature()` → retorna `{ data, loading, error, acciones... }`
+
+**Hooks ya implementados (referencia):**
+- `lib/hooks/useTransactions.js` → HU-1 (CRUD, filtros, búsqueda)
+- `lib/hooks/useDashboardStats.js` → HU-2 (estadísticas, gráficas, período)
+- `lib/hooks/useRecurring.js` → Transacciones recurrentes (estado modal + CRUD)
+
+**Convención para nuevos hooks:**
+```js
+// lib/hooks/useNombreFeature.js
+export function useNombreFeature() {
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  // lógica de fetch, useEffect, useCallback...
+
+  return { data, loading, error, /* acciones */ }
+}
+```
+
+---
+
+**Última actualización:** 2026-03-16
+**Versión:** 0.2.0 (Dashboard + Charts + AI Widget + Recurring + Custom Hooks)
 **Equipo:** Sara, Sofía, Manuela, Alejandra

@@ -8,6 +8,7 @@ import {
   Wallet,
   PieChart,
   TrendingUp,
+  RefreshCw,
   Bell,
   Settings,
   LogOut,
@@ -18,26 +19,35 @@ import {
   Mail,
   AlertTriangle,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useTranslations } from 'next-intl';
 import { getUnreadAlertCount } from '@/lib/supabase/alerts';
+import AIChatWidget from '@/components/dashboard/AIChatWidget';
 import styles from './DashboardLayout.module.css';
 
-const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Wallet, label: 'Transacciones', path: '/dashboard/transactions' },
-  { icon: PieChart, label: 'Presupuestos', path: '/dashboard/budgets' },
-  { icon: AlertTriangle, label: 'Alertas', path: '/dashboard/alerts' },
-  { icon: Mail, label: 'Sincronizar', path: '/dashboard/sync' },
-  { icon: TrendingUp, label: 'Reportes', path: '/dashboard/reports' },
-];
-
 export default function DashboardLayout({ children }) {
+  const t = useTranslations('Nav')
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  const isPremium = profile?.subscription_tier === 'premium';
+
+  const navItems = [
+    { icon: LayoutDashboard, label: t('dashboard'),    path: '/dashboard' },
+    { icon: Wallet,          label: t('transactions'), path: '/dashboard/transactions' },
+    { icon: RefreshCw,       label: t('recurring'),    path: '/dashboard/recurring' },
+    { icon: PieChart,        label: t('budgets'),      path: '/dashboard/budgets' },
+    ...(isPremium ? [
+      { icon: AlertTriangle, label: 'Alertas', path: '/dashboard/alerts' },
+      { icon: Mail,          label: 'Sincronizar', path: '/dashboard/sync' },
+    ] : []),
+    { icon: TrendingUp,      label: t('reports'),      path: '/dashboard/reports' },
+  ];
 
   useEffect(() => {
     async function fetchAlertCount() {
@@ -48,10 +58,10 @@ export default function DashboardLayout({ children }) {
         // silently fail
       }
     }
-    if (profile?.subscription_tier === 'premium') {
+    if (isPremium) {
       fetchAlertCount();
     }
-  }, [profile, pathname]);
+  }, [isPremium, pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -77,42 +87,17 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className={styles.dashboardLayout}>
-      {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div
-          className={styles.overlay}
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className={styles.overlay} onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.sidebarHeader}>
           <Link href="/dashboard" className={styles.logo}>
-            <div className={styles.logoIcon}>
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <rect width="32" height="32" rx="8" fill="url(#logoGradientDash)" />
-                <path
-                  d="M9 12h14M9 16h10M9 20h6"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <circle cx="22" cy="18" r="4" stroke="white" strokeWidth="2" />
-                <defs>
-                  <linearGradient id="logoGradientDash" x1="0" y1="0" x2="32" y2="32">
-                    <stop stopColor="#22c55e" />
-                    <stop offset="1" stopColor="#16a34a" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
+            <Image src="/images/LogoFintia.png" alt="Fintia" width={36} height={36} style={{ objectFit: 'contain' }} />
             <span className={styles.logoText}>Fintia</span>
           </Link>
-          <button
-            className={styles.closeSidebar}
-            onClick={() => setSidebarOpen(false)}
-          >
+          <button className={styles.closeSidebar} onClick={() => setSidebarOpen(false)}>
             <X size={24} />
           </button>
         </div>
@@ -134,30 +119,25 @@ export default function DashboardLayout({ children }) {
         <div className={styles.sidebarFooter}>
           <Link href="/dashboard/settings" className={styles.navItem}>
             <Settings size={20} />
-            <span>Configuración</span>
+            <span>{t('settings')}</span>
           </Link>
           <button onClick={handleSignOut} className={styles.navItem}>
             <LogOut size={20} />
-            <span>Cerrar sesión</span>
+            <span>{t('signOut')}</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className={styles.mainContent}>
-        {/* Top Header */}
         <header className={styles.topHeader}>
-          <button
-            className={styles.menuToggle}
-            onClick={() => setSidebarOpen(true)}
-          >
+          <button className={styles.menuToggle} onClick={() => setSidebarOpen(true)}>
             <Menu size={24} />
           </button>
 
           <div className={styles.headerActions}>
             <button className={styles.addButton} onClick={() => router.push('/dashboard/transactions')}>
               <Plus size={20} />
-              <span>Nuevo gasto</span>
+              <span>{t('newExpense')}</span>
             </button>
 
             <button className={styles.notificationBtn} onClick={() => router.push('/dashboard/alerts')}>
@@ -168,10 +148,7 @@ export default function DashboardLayout({ children }) {
             </button>
 
             <div className={styles.userMenu}>
-              <button
-                className={styles.userMenuBtn}
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-              >
+              <button className={styles.userMenuBtn} onClick={() => setUserMenuOpen(!userMenuOpen)}>
                 <div className={styles.userAvatar}>{getUserInitials()}</div>
                 <ChevronDown size={16} />
               </button>
@@ -188,11 +165,11 @@ export default function DashboardLayout({ children }) {
                   <div className={styles.dropdownDivider}></div>
                   <Link href="/dashboard/settings" className={styles.dropdownItem}>
                     <Settings size={18} />
-                    Configuración
+                    {t('settings')}
                   </Link>
                   <button onClick={handleSignOut} className={styles.dropdownItem}>
                     <LogOut size={18} />
-                    Cerrar sesión
+                    {t('signOut')}
                   </button>
                 </div>
               )}
@@ -200,11 +177,12 @@ export default function DashboardLayout({ children }) {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className={styles.pageContent}>
           {children}
         </main>
       </div>
+
+      <AIChatWidget />
     </div>
   );
 }

@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { ArrowRight, Play } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useTranslations } from 'next-intl';
 import styles from './Hero.module.css';
 
 const Hero = () => {
+  const t = useTranslations('Hero')
   const { user } = useAuth();
 
   return (
@@ -14,51 +16,48 @@ const Hero = () => {
         <div className={styles.heroContent}>
           <div className={styles.badge}>
             <span className={styles.badgeDot}></span>
-            Nuevo: Sincronización bancaria disponible
+            {t('badge')}
           </div>
 
           <h1 className={styles.headline}>
-            Controla tu dinero{' '}
-            <span className="text-gradient">sin complicaciones</span>
+            {t('headline')}{' '}
+            <span className="text-gradient">{t('headlineGradient')}</span>
           </h1>
 
-          <p className={styles.subheadline}>
-            Fintia te ayuda a registrar, visualizar y automatizar tus finanzas
-            personales en un solo lugar. Simple, visual y diseñado para ti.
-          </p>
+          <p className={styles.subheadline}>{t('subheadline')}</p>
 
           <div className={styles.ctaGroup}>
             {user ? (
               <Link href="/dashboard" className="btn btn-primary">
-                Ir al Dashboard
+                {t('goToDashboard')}
                 <ArrowRight size={18} />
               </Link>
             ) : (
               <Link href="/signup" className="btn btn-primary">
-                Comenzar gratis
+                {t('getStarted')}
                 <ArrowRight size={18} />
               </Link>
             )}
             <a href="#pricing" className="btn btn-secondary">
               <Play size={18} />
-              Ver versión Premium
+              {t('viewPremium')}
             </a>
           </div>
 
           <div className={styles.trustIndicators}>
             <div className={styles.trustItem}>
               <span className={styles.trustNumber}>10k+</span>
-              <span className={styles.trustLabel}>Usuarios activos</span>
+              <span className={styles.trustLabel}>{t('activeUsers')}</span>
             </div>
             <div className={styles.trustDivider}></div>
             <div className={styles.trustItem}>
               <span className={styles.trustNumber}>4.9</span>
-              <span className={styles.trustLabel}>Calificación</span>
+              <span className={styles.trustLabel}>{t('rating')}</span>
             </div>
             <div className={styles.trustDivider}></div>
             <div className={styles.trustItem}>
               <span className={styles.trustNumber}>$2M+</span>
-              <span className={styles.trustLabel}>Gestionados</span>
+              <span className={styles.trustLabel}>{t('managed')}</span>
             </div>
           </div>
         </div>
@@ -67,74 +66,64 @@ const Hero = () => {
           <div className={styles.dashboardMockup}>
             <div className={styles.mockupHeader}>
               <div className={styles.mockupDots}>
-                <span></span>
-                <span></span>
-                <span></span>
+                <span></span><span></span><span></span>
               </div>
               <span className={styles.mockupTitle}>Dashboard - Fintia</span>
             </div>
             <div className={styles.mockupContent}>
               <div className={styles.mockupStats}>
                 <div className={styles.statCard}>
-                  <span className={styles.statLabel}>Balance Total</span>
+                  <span className={styles.statLabel}>{t('mockup.totalBalance')}</span>
                   <span className={styles.statValue}>$12,450.00</span>
-                  <span className={styles.statChange}>+8.2% este mes</span>
+                  <span className={styles.statChange}>{t('mockup.thisMonth')}</span>
                 </div>
                 <div className={styles.statCard}>
-                  <span className={styles.statLabel}>Gastos</span>
+                  <span className={styles.statLabel}>{t('mockup.expenses')}</span>
                   <span className={styles.statValueRed}>-$2,340.00</span>
-                  <span className={styles.statChangeNeg}>-12% vs mes pasado</span>
+                  <span className={styles.statChangeNeg}>{t('mockup.vsPastMonth')}</span>
                 </div>
               </div>
               <div className={styles.mockupChart}>
-                <div className={styles.chartTitle}>Gastos por categoría</div>
+                <div className={styles.chartTitle}>{t('mockup.byCategory')}</div>
                 <div className={styles.chartBars}>
                   <div className={styles.chartBar}>
-                    <span className={styles.barLabel}>Comida</span>
-                    <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ width: '75%' }}></div>
-                    </div>
+                    <span className={styles.barLabel}>{t('mockup.food')}</span>
+                    <div className={styles.barTrack}><div className={styles.barFill} style={{ width: '75%' }}></div></div>
                     <span className={styles.barValue}>$450</span>
                   </div>
                   <div className={styles.chartBar}>
-                    <span className={styles.barLabel}>Transporte</span>
-                    <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ width: '55%' }}></div>
-                    </div>
+                    <span className={styles.barLabel}>{t('mockup.transport')}</span>
+                    <div className={styles.barTrack}><div className={styles.barFill} style={{ width: '55%' }}></div></div>
                     <span className={styles.barValue}>$320</span>
                   </div>
                   <div className={styles.chartBar}>
-                    <span className={styles.barLabel}>Servicios</span>
-                    <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ width: '40%' }}></div>
-                    </div>
+                    <span className={styles.barLabel}>{t('mockup.services')}</span>
+                    <div className={styles.barTrack}><div className={styles.barFill} style={{ width: '40%' }}></div></div>
                     <span className={styles.barValue}>$180</span>
                   </div>
                   <div className={styles.chartBar}>
-                    <span className={styles.barLabel}>Ocio</span>
-                    <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ width: '30%' }}></div>
-                    </div>
+                    <span className={styles.barLabel}>{t('mockup.leisure')}</span>
+                    <div className={styles.barTrack}><div className={styles.barFill} style={{ width: '30%' }}></div></div>
                     <span className={styles.barValue}>$120</span>
                   </div>
                 </div>
               </div>
               <div className={styles.mockupTransactions}>
-                <div className={styles.transactionTitle}>Últimas transacciones</div>
+                <div className={styles.transactionTitle}>{t('mockup.latestTransactions')}</div>
                 <div className={styles.transactionList}>
                   <div className={styles.transaction}>
                     <div className={styles.transactionIcon} style={{ background: '#fef3c7' }}>🛒</div>
                     <div className={styles.transactionInfo}>
-                      <span className={styles.transactionName}>Supermercado</span>
-                      <span className={styles.transactionDate}>Hoy, 14:30</span>
+                      <span className={styles.transactionName}>{t('mockup.supermarket')}</span>
+                      <span className={styles.transactionDate}>{t('mockup.todayTime')}</span>
                     </div>
                     <span className={styles.transactionAmount}>-$85.50</span>
                   </div>
                   <div className={styles.transaction}>
                     <div className={styles.transactionIcon} style={{ background: '#dcfce7' }}>💰</div>
                     <div className={styles.transactionInfo}>
-                      <span className={styles.transactionName}>Salario</span>
-                      <span className={styles.transactionDate}>Ayer</span>
+                      <span className={styles.transactionName}>{t('mockup.salary')}</span>
+                      <span className={styles.transactionDate}>{t('mockup.yesterday')}</span>
                     </div>
                     <span className={styles.transactionAmountPositive}>+$3,500.00</span>
                   </div>
@@ -145,13 +134,13 @@ const Hero = () => {
           <div className={styles.floatingCard1}>
             <div className={styles.alertIcon}>🔔</div>
             <div className={styles.alertContent}>
-              <span className={styles.alertTitle}>Alerta de presupuesto</span>
-              <span className={styles.alertText}>80% gastado en Comida</span>
+              <span className={styles.alertTitle}>{t('mockup.alertTitle')}</span>
+              <span className={styles.alertText}>{t('mockup.alertText')}</span>
             </div>
           </div>
           <div className={styles.floatingCard2}>
             <div className={styles.syncIcon}>✓</div>
-            <span>Sincronizado</span>
+            <span>{t('mockup.synced')}</span>
           </div>
         </div>
       </div>

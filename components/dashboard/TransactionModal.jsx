@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { getCategoriesByType } from '@/lib/data/categories'
 import { createTransaction, updateTransaction } from '@/lib/supabase/transactions'
+import { useTranslations } from 'next-intl'
+import CurrencyInput from './CurrencyInput'
 import styles from './TransactionModal.module.css'
 
 export default function TransactionModal({ isOpen, onClose, onSuccess, transaction = null }) {
+  const t = useTranslations('TransactionModal')
   const isEditing = Boolean(transaction)
 
   const [type, setType] = useState('expense')
@@ -43,7 +46,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!amount || !categoryId || !date) {
-      setError('Por favor completa todos los campos obligatorios.')
+      setError(t('errorRequired'))
       return
     }
     setLoading(true)
@@ -64,7 +67,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
       onSuccess()
       onClose()
     } catch (err) {
-      setError(err.message || 'Error al guardar la transacción.')
+      setError(err.message || t('errorSave'))
     } finally {
       setLoading(false)
     }
@@ -78,7 +81,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <h2>{isEditing ? 'Editar transacción' : 'Nueva transacción'}</h2>
+          <h2>{isEditing ? t('titleEdit') : t('titleNew')}</h2>
           <button className={styles.closeBtn} onClick={onClose} type="button">
             <X size={20} />
           </button>
@@ -90,14 +93,14 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
             className={`${styles.typeBtn} ${type === 'expense' ? styles.expenseActive : ''}`}
             onClick={() => handleTypeChange('expense')}
           >
-            Gasto
+            {t('typeExpense')}
           </button>
           <button
             type="button"
             className={`${styles.typeBtn} ${type === 'income' ? styles.incomeActive : ''}`}
             onClick={() => handleTypeChange('income')}
           >
-            Ingreso
+            {t('typeIncome')}
           </button>
         </div>
 
@@ -106,24 +109,21 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.row}>
             <div className={styles.field}>
-              <label htmlFor="modal-amount">Monto *</label>
+              <label htmlFor="modal-amount">{t('amount')}</label>
               <div className={styles.inputWrapper}>
                 <span className={styles.prefix}>$</span>
-                <input
+                <CurrencyInput
                   id="modal-amount"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
+                  onChange={setAmount}
+                  placeholder="0"
                   required
                 />
               </div>
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="modal-date">Fecha *</label>
+              <label htmlFor="modal-date">{t('date')}</label>
               <input
                 id="modal-date"
                 type="date"
@@ -135,14 +135,14 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="modal-category">Categoría *</label>
+            <label htmlFor="modal-category">{t('category')}</label>
             <select
               id="modal-category"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               required
             >
-              <option value="">Selecciona una categoría</option>
+              <option value="">{t('categoryPlaceholder')}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.icon} {cat.name}
@@ -152,27 +152,27 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="modal-desc">Descripción</label>
+            <label htmlFor="modal-desc">{t('description')}</label>
             <input
               id="modal-desc"
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descripción opcional"
+              placeholder={t('descriptionPlaceholder')}
               maxLength={200}
             />
           </div>
 
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={onClose}>
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               type="submit"
               className={`${styles.submitBtn} ${type === 'income' ? styles.incomeSubmit : styles.expenseSubmit}`}
               disabled={loading}
             >
-              {loading ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Registrar'}
+              {loading ? t('saving') : isEditing ? t('saveChanges') : t('register')}
             </button>
           </div>
         </form>

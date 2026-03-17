@@ -1,56 +1,35 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Plus, Search, Edit2, Trash2, X } from 'lucide-react'
 import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
-import { getTransactions, deleteTransaction } from '@/lib/supabase/transactions'
 import { getCategoryById, CATEGORIES } from '@/lib/data/categories'
+import { useTransactions } from '@/lib/hooks/useTransactions'
+import { useTranslations } from 'next-intl'
 import styles from './page.module.css'
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  const [filterType, setFilterType] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
-  const [filterFrom, setFilterFrom] = useState('')
-  const [filterTo, setFilterTo] = useState('')
-  const [search, setSearch] = useState('')
+  const t = useTranslations('Transactions')
+  const {
+    transactions: displayed,
+    loading,
+    error,
+    filters,
+    hasActiveFilters,
+    setFilter,
+    clearFilters,
+    deleteTransaction,
+    refetch,
+  } = useTransactions()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await getTransactions({
-        filters: {
-          type: filterType || undefined,
-          category_id: filterCategory || undefined,
-          from: filterFrom || undefined,
-          to: filterTo || undefined,
-        },
-      })
-      setTransactions(data)
-    } catch (err) {
-      setError('Error al cargar las transacciones. Verifica que la base de datos esté configurada.')
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [filterType, filterCategory, filterFrom, filterTo])
-
-  useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
-
-  const handleEdit = (t) => {
-    setEditingTransaction(t)
+  const handleEdit = (tx) => {
+    setEditingTransaction(tx)
     setModalOpen(true)
   }
 
@@ -59,7 +38,6 @@ export default function TransactionsPage() {
     try {
       await deleteTransaction(id)
       setDeletingId(null)
-      fetchTransactions()
     } catch (err) {
       console.error(err)
     } finally {
@@ -71,26 +49,6 @@ export default function TransactionsPage() {
     setModalOpen(false)
     setEditingTransaction(null)
   }
-
-  const clearFilters = () => {
-    setFilterType('')
-    setFilterCategory('')
-    setFilterFrom('')
-    setFilterTo('')
-    setSearch('')
-  }
-
-  const hasActiveFilters = filterType || filterCategory || filterFrom || filterTo || search
-
-  const displayed = transactions.filter((t) => {
-    if (!search) return true
-    const cat = getCategoryById(t.category_id)
-    const s = search.toLowerCase()
-    return (
-      t.description?.toLowerCase().includes(s) ||
-      cat?.name.toLowerCase().includes(s)
-    )
-  })
 
   const fmt = (amount) =>
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount)
@@ -110,8 +68,8 @@ export default function TransactionsPage() {
         {/* Header */}
         <div className={styles.header}>
           <div>
-            <h1>Transacciones</h1>
-            <p>Registra y administra tus ingresos y gastos</p>
+            <h1>{t('title')}</h1>
+            <p>{t('subtitle')}</p>
           </div>
           <button
             className={styles.newBtn}
@@ -121,7 +79,7 @@ export default function TransactionsPage() {
             }}
           >
             <Plus size={18} />
-            Nueva transacción
+            {t('newTransaction')}
           </button>
         </div>
 
@@ -131,28 +89,28 @@ export default function TransactionsPage() {
             <Search size={16} className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Buscar por descripción o categoría..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('searchPlaceholder')}
+              value={filters.search}
+              onChange={(e) => setFilter('search', e.target.value)}
               className={styles.searchInput}
             />
           </div>
           <div className={styles.filterRow}>
             <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              value={filters.type}
+              onChange={(e) => setFilter('type', e.target.value)}
               className={styles.filterSelect}
             >
-              <option value="">Todos los tipos</option>
-              <option value="income">Ingresos</option>
-              <option value="expense">Gastos</option>
+              <option value="">{t('allTypes')}</option>
+              <option value="income">{t('income')}</option>
+              <option value="expense">{t('expenses')}</option>
             </select>
             <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+              value={filters.category_id}
+              onChange={(e) => setFilter('category_id', e.target.value)}
               className={styles.filterSelect}
             >
-              <option value="">Todas las categorías</option>
+              <option value="">{t('allCategories')}</option>
               {CATEGORIES.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.icon} {cat.name}
@@ -161,21 +119,19 @@ export default function TransactionsPage() {
             </select>
             <input
               type="date"
-              value={filterFrom}
-              onChange={(e) => setFilterFrom(e.target.value)}
+              value={filters.from}
+              onChange={(e) => setFilter('from', e.target.value)}
               className={styles.filterInput}
-              title="Desde"
             />
             <input
               type="date"
-              value={filterTo}
-              onChange={(e) => setFilterTo(e.target.value)}
+              value={filters.to}
+              onChange={(e) => setFilter('to', e.target.value)}
               className={styles.filterInput}
-              title="Hasta"
             />
             {hasActiveFilters && (
               <button className={styles.clearBtn} onClick={clearFilters}>
-                <X size={14} /> Limpiar
+                <X size={14} /> {t('clearFilters')}
               </button>
             )}
           </div>
@@ -185,46 +141,44 @@ export default function TransactionsPage() {
         {loading ? (
           <div className={styles.center}>
             <div className={styles.spinner} />
-            <p>Cargando transacciones...</p>
+            <p>{t('loading')}</p>
           </div>
         ) : error ? (
           <div className={styles.errorBox}>{error}</div>
         ) : displayed.length === 0 ? (
           <div className={styles.empty}>
             <div className={styles.emptyIcon}>📋</div>
-            <h3>Sin transacciones</h3>
+            <h3>{t('emptyTitle')}</h3>
             <p>
-              {hasActiveFilters
-                ? 'No hay transacciones que coincidan con los filtros.'
-                : 'Aún no tienes transacciones registradas.'}
+              {hasActiveFilters ? t('emptyFiltered') : t('emptyDefault')}
             </p>
             {!hasActiveFilters && (
               <button className={styles.newBtn} onClick={() => setModalOpen(true)}>
-                <Plus size={18} /> Registrar primera transacción
+                <Plus size={18} /> {t('registerFirst')}
               </button>
             )}
           </div>
         ) : (
           <>
             <p className={styles.count}>
-              {displayed.length} transacción{displayed.length !== 1 ? 'es' : ''}
+              {displayed.length === 1 ? t('count', { count: displayed.length }) : t('countPlural', { count: displayed.length })}
             </p>
             <div className={styles.tableWrapper}>
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th>Categoría</th>
-                    <th>Descripción</th>
-                    <th>Fecha</th>
-                    <th className={styles.amountCol}>Monto</th>
+                    <th>{t('colCategory')}</th>
+                    <th>{t('colDescription')}</th>
+                    <th>{t('colDate')}</th>
+                    <th className={styles.amountCol}>{t('colAmount')}</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {displayed.map((t) => {
-                    const cat = getCategoryById(t.category_id)
+                  {displayed.map((tx) => {
+                    const cat = getCategoryById(tx.category_id)
                     return (
-                      <tr key={t.id}>
+                      <tr key={tx.id}>
                         <td>
                           <div className={styles.catCell}>
                             <span
@@ -236,55 +190,43 @@ export default function TransactionsPage() {
                             >
                               {cat?.icon || '📦'}
                             </span>
-                            <span className={styles.catName}>{cat?.name || t.category_id}</span>
+                            <span className={styles.catName}>{cat?.name || tx.category_id}</span>
                           </div>
                         </td>
                         <td className={styles.descCell}>
-                          {t.description || <span className={styles.noDesc}>—</span>}
+                          {tx.description || <span className={styles.noDesc}>—</span>}
                         </td>
-                        <td className={styles.dateCell}>{fmtDate(t.date)}</td>
+                        <td className={styles.dateCell}>{fmtDate(tx.date)}</td>
                         <td className={styles.amountCol}>
-                          <span
-                            className={
-                              t.type === 'income' ? styles.incomeAmount : styles.expenseAmount
-                            }
-                          >
-                            {t.type === 'income' ? '+' : '-'}
-                            {fmt(t.amount)}
+                          <span className={tx.type === 'income' ? styles.incomeAmount : styles.expenseAmount}>
+                            {tx.type === 'income' ? '+' : '-'}
+                            {fmt(tx.amount)}
                           </span>
                         </td>
                         <td>
-                          {deletingId === t.id ? (
+                          {deletingId === tx.id ? (
                             <div className={styles.deleteConfirm}>
-                              <span>¿Eliminar?</span>
+                              <span>{t('deleteConfirm')}</span>
                               <button
                                 className={styles.confirmYes}
-                                onClick={() => handleDelete(t.id)}
+                                onClick={() => handleDelete(tx.id)}
                                 disabled={deleteLoading}
                               >
-                                Sí
+                                {t('yes')}
                               </button>
                               <button
                                 className={styles.confirmNo}
                                 onClick={() => setDeletingId(null)}
                               >
-                                No
+                                {t('no')}
                               </button>
                             </div>
                           ) : (
                             <div className={styles.rowActions}>
-                              <button
-                                className={styles.editBtn}
-                                onClick={() => handleEdit(t)}
-                                title="Editar"
-                              >
+                              <button className={styles.editBtn} onClick={() => handleEdit(tx)} title="Edit">
                                 <Edit2 size={15} />
                               </button>
-                              <button
-                                className={styles.deleteBtn}
-                                onClick={() => setDeletingId(t.id)}
-                                title="Eliminar"
-                              >
+                              <button className={styles.deleteBtn} onClick={() => setDeletingId(tx.id)} title="Delete">
                                 <Trash2 size={15} />
                               </button>
                             </div>
@@ -302,9 +244,10 @@ export default function TransactionsPage() {
         <TransactionModal
           isOpen={modalOpen}
           onClose={handleModalClose}
-          onSuccess={fetchTransactions}
+          onSuccess={refetch}
           transaction={editingTransaction}
         />
+
       </div>
     </DashboardLayout>
   )

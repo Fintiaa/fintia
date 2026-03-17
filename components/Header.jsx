@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, X, LogOut } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { useTranslations } from 'next-intl'
 import styles from './Header.module.css'
 
 const Header = () => {
+  const t = useTranslations('Header')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user, signOut } = useAuth()
 
@@ -22,31 +25,14 @@ const Header = () => {
     <header className={styles.header}>
       <div className={`container ${styles.headerContainer}`}>
         <Link href="/" className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="url(#logoGradient)" />
-              <path
-                d="M9 12h14M9 16h10M9 20h6"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <circle cx="22" cy="18" r="4" stroke="white" strokeWidth="2" />
-              <defs>
-                <linearGradient id="logoGradient" x1="0" y1="0" x2="32" y2="32">
-                  <stop stopColor="#22c55e" />
-                  <stop offset="1" stopColor="#16a34a" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
+          <Image src="/images/LogoFintia.png" alt="Fintia" width={36} height={36} style={{ objectFit: 'contain' }} />
           <span className={styles.logoText}>Fintia</span>
         </Link>
 
         <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ''}`}>
-          <a href="#features" className={styles.navLink}>Funciones</a>
-          <a href="#how-it-works" className={styles.navLink}>Cómo funciona</a>
-          <a href="#pricing" className={styles.navLink}>Precios</a>
+          <a href="#features" className={styles.navLink}>{t('features')}</a>
+          <a href="#how-it-works" className={styles.navLink}>{t('howItWorks')}</a>
+          <a href="#pricing" className={styles.navLink}>{t('pricing')}</a>
         </nav>
 
         <div className={styles.headerActions}>
@@ -55,13 +41,13 @@ const Header = () => {
               <span className={styles.userEmail}>{user.email}</span>
               <button onClick={handleSignOut} className={styles.logoutBtn}>
                 <LogOut size={18} />
-                Salir
+                {t('logout')}
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className={styles.loginLink}>Iniciar sesión</Link>
-              <Link href="/signup" className="btn btn-primary">Comenzar gratis</Link>
+              <Link href="/login" className={styles.loginLink}>{t('login')}</Link>
+              <Link href="/signup" className="btn btn-primary">{t('getStarted')}</Link>
             </>
           )}
         </div>
@@ -78,9 +64,9 @@ const Header = () => {
       {isMenuOpen && (
         <div className={styles.mobileMenu}>
           <nav className={styles.mobileNav}>
-            <a href="#features" className={styles.mobileNavLink}>Funciones</a>
-            <a href="#how-it-works" className={styles.mobileNavLink}>Cómo funciona</a>
-            <a href="#pricing" className={styles.mobileNavLink}>Precios</a>
+            <a href="#features" className={styles.mobileNavLink}>{t('features')}</a>
+            <a href="#how-it-works" className={styles.mobileNavLink}>{t('howItWorks')}</a>
+            <a href="#pricing" className={styles.mobileNavLink}>{t('pricing')}</a>
             {user ? (
               <>
                 <span className={styles.mobileUserEmail}>{user.email}</span>
@@ -90,18 +76,14 @@ const Header = () => {
                   style={{ width: '100%', marginTop: '16px' }}
                 >
                   <LogOut size={18} />
-                  Cerrar sesión
+                  {t('signOut')}
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className={styles.mobileNavLink}>Iniciar sesión</Link>
-                <Link
-                  href="/signup"
-                  className="btn btn-primary"
-                  style={{ width: '100%', marginTop: '16px' }}
-                >
-                  Comenzar gratis
+                <Link href="/login" className={styles.mobileNavLink}>{t('login')}</Link>
+                <Link href="/signup" className="btn btn-primary" style={{ width: '100%', marginTop: '16px' }}>
+                  {t('getStarted')}
                 </Link>
               </>
             )}
