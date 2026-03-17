@@ -112,7 +112,7 @@ export async function POST(request) {
 
         if (txError) {
           console.error('Error saving confirmed transaction:', JSON.stringify(txError))
-          return twiml('Hubo un error al guardar 😕 Intenta de nuevo.')
+          return twiml(`Error: ${txError.code} - ${txError.message}`)
         }
 
         return twiml(`✅ ¡Listo! Registré ${p.description} por ${fmt(p.amount)} en tu cuenta Fintia 💚`)
