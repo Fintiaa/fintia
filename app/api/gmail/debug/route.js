@@ -62,17 +62,10 @@ export async function GET() {
       return NextResponse.json({ steps })
     }
 
-    // Step 6: Search with bank query
-    const BANK_SENDERS = [
-      'alertasynotificaciones@bancolombia.com.co',
-      'notificaciones@bancolombia.com.co',
-      'notificaciones@davivienda.com',
-      'notificaciones@nequi.com.co',
-    ]
-    const senderQuery = BANK_SENDERS.map((s) => `from:${s}`).join(' OR ')
-    const bankKeywords = ['Bancolombia', 'Davivienda', 'BBVA', 'Nequi', 'Daviplata']
-    const keywordQuery = bankKeywords.map((k) => `subject:${k}`).join(' OR ')
-    const fullQuery = `(${senderQuery} OR ${keywordQuery})`
+    // Step 6: Search with domain-based query (same as fetcher)
+    const BANK_DOMAINS = ['bancolombia', 'notificacionesbancolombia', 'davivienda', 'nequi', 'daviplata', 'bbva.com.co']
+    const senderQuery = BANK_DOMAINS.map((d) => `from:${d}`).join(' OR ')
+    const fullQuery = `(${senderQuery})`
 
     steps.push({ step: '6. Gmail Query', status: 'INFO', detail: fullQuery })
 
