@@ -27,9 +27,28 @@ Si SÍ es una transacción, responde ÚNICAMENTE con JSON válido:
   "amount": número_entero_en_COP,
   "type": "income" o "expense",
   "category_id": "una_de_las_categorías",
-  "description": "descripción breve en español",
-  "date": "YYYY-MM-DD"
-}`
+  "description": "descripción breve en español"
+}
+
+NO incluyas el campo "date" — la fecha la maneja el sistema automáticamente.`
+
+const RECEIPT_PROMPT = `Eres un asistente financiero. Analiza esta imagen de una factura o recibo y extrae la información de la transacción.
+
+CATEGORÍAS DISPONIBLES:
+Ingresos: salary, freelance, investment, other_income
+Gastos: food, transport, housing, services, entertainment, health, education, other_expense
+
+Responde ÚNICAMENTE con JSON válido:
+{
+  "is_transaction": true,
+  "amount": número_entero_total_en_COP,
+  "type": "expense",
+  "category_id": "una_de_las_categorías",
+  "description": "descripción breve del establecimiento o producto"
+}
+
+Si no puedes leer la factura, responde:
+{"is_transaction": false, "reply": "No pude leer la factura 😕 Intenta con una foto más clara."}`
 
 const CONFIRM_WORDS = ['sí', 'si', 's', 'yes', 'ok', 'dale', 'listo', 'confirmar', 'confirmo', 'obvio', 'claro']
 const CANCEL_WORDS = ['no', 'cancel', 'cancelar', 'nope', 'neg']
@@ -56,18 +75,91 @@ function fmt(amount) {
   return `$${Number(amount).toLocaleString('es-CO')}`
 }
 
+function twilioAuthHeader() {
+  const sid = process.env.TWILIO_ACCOUNT_SID
+  const token = process.env.TWILIO_AUTH_TOKEN
+  if (!sid || !token) return null
+  return 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64')
+}
+
+async function fetchTwilioMedia(mediaUrl) {
+  const auth = twilioAuthHeader()
+  const res = await fetch(mediaUrl, auth ? { headers: { Authorization: auth } } : {})
+  if (!res.ok) throw new Error(`Failed to fetch media: ${res.status}`)
+  const buffer = await res.arrayBuffer()
+  const contentType = res.headers.get('content-type') || 'application/octet-stream'
+  return { buffer, contentType }
+}
+
+async function transcribeAudio(mediaUrl, groq) {
+  const { buffer, contentType } = await fetchTwilioMedia(mediaUrl)
+  const ext = contentType.includes('ogg') ? 'ogg'
+    : contentType.includes('mp4') ? 'mp4'
+    : contentType.includes('mpeg') ? 'mp3'
+    : contentType.includes('wav') ? 'wav'
+    : 'ogg'
+  const file = new File([buffer], `audio.${ext}`, { type: contentType })
+  const transcription = await groq.audio.transcriptions.create({
+    file,
+    model: 'whisper-large-v3',
+    language: 'es',
+  })
+  return transcription.text
+}
+
+async function analyzeReceipt(mediaUrl, groq) {
+  const { buffer, contentType } = await fetchTwilioMedia(mediaUrl)
+  const base64 = Buffer.from(buffer).toString('base64')
+  const dataUrl = `data:${contentType};base64,${base64}`
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.2-11b-vision-preview',
+    messages: [
+      { role: 'system', content: RECEIPT_PROMPT },
+      {
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: dataUrl } },
+          { type: 'text', text: 'Extrae la información de esta factura.' },
+        ],
+      },
+    ],
+    max_tokens: 300,
+    temperature: 0.1,
+  })
+  return completion.choices[0].message.content.trim()
+}
+
+async function parseWithGroq(text, groq) {
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: text },
+    ],
+    max_tokens: 300,
+    temperature: 0.1,
+  })
+  const responseText = completion.choices[0].message.content.trim()
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('No JSON in response')
+  return JSON.parse(jsonMatch[0])
+}
+
 export async function POST(request) {
   try {
     const formData = await request.formData()
     const from = formData.get('From') || ''
     const body = (formData.get('Body') || '').trim()
     const phoneNumber = from.replace('whatsapp:', '')
+    const numMedia = parseInt(formData.get('NumMedia') || '0')
+    const mediaUrl = numMedia > 0 ? formData.get('MediaUrl0') : null
+    const mediaType = numMedia > 0 ? (formData.get('MediaContentType0') || '') : ''
 
-    if (!phoneNumber || !body) return twiml('No pude entender tu mensaje.')
+    if (!phoneNumber) return twiml('No pude entender tu mensaje.')
 
     const supabase = createAdminClient()
 
-    // Find user by whatsapp_number
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, full_name, subscription_tier, whatsapp_pending')
@@ -91,7 +183,7 @@ export async function POST(request) {
     const lowerBody = body.toLowerCase().trim()
 
     // --- Handle confirmation of pending transaction ---
-    if (profile.whatsapp_pending) {
+    if (profile.whatsapp_pending && !mediaUrl) {
       if (CONFIRM_WORDS.includes(lowerBody)) {
         const p = profile.whatsapp_pending
 
@@ -110,7 +202,6 @@ export async function POST(request) {
           return twiml('Hubo un error al guardar 😕 Intenta de nuevo.')
         }
 
-        // Only clear pending after successful insert
         await supabase
           .from('profiles')
           .update({ whatsapp_pending: null })
@@ -127,38 +218,47 @@ export async function POST(request) {
         return twiml('Cancelado 👍 Cuéntame si tienes otro gasto o ingreso.')
       }
 
-      // New message while there's a pending — cancel old and process new
+      // New message while pending — cancel old and process new
       await supabase
         .from('profiles')
         .update({ whatsapp_pending: null })
         .eq('id', profile.id)
     }
 
-    // --- Parse message with Groq ---
+    // --- Process media or text ---
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
     let parsed
 
     try {
-      const completion = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: body },
-        ],
-        max_tokens: 300,
-        temperature: 0.1,
-      })
+      if (mediaUrl && mediaType.startsWith('audio/')) {
+        // 🎤 Audio message → transcribe → parse
+        const transcript = await transcribeAudio(mediaUrl, groq)
+        if (!transcript) return twiml('No pude escuchar bien el audio 😕 Intenta de nuevo.')
+        parsed = await parseWithGroq(transcript, groq)
 
-      const responseText = completion.choices[0].message.content.trim()
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('No JSON in response')
-      parsed = JSON.parse(jsonMatch[0])
+      } else if (mediaUrl && mediaType.startsWith('image/')) {
+        // 🧾 Receipt image → vision model
+        const responseText = await analyzeReceipt(mediaUrl, groq)
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) throw new Error('No JSON from vision')
+        parsed = JSON.parse(jsonMatch[0])
+
+      } else {
+        // 💬 Text message
+        if (!body) return twiml('No pude entender tu mensaje.')
+        parsed = await parseWithGroq(body, groq)
+      }
     } catch (err) {
       console.error('Groq parse error:', err.message)
+      if (mediaType.startsWith('audio/')) {
+        return twiml('No pude procesar el audio 😅 Intenta escribir el gasto.')
+      }
+      if (mediaType.startsWith('image/')) {
+        return twiml('No pude leer la factura 😕 Intenta con una foto más clara o escribe el monto.')
+      }
       return twiml('No entendí bien 😅 Intenta con algo como: _"Gasté 20 mil en el almuerzo"_')
     }
 
-    // Not a transaction
     if (!parsed.is_transaction) {
       return twiml(parsed.reply || 'Cuéntame qué gastaste o recibiste y lo registro por ti 💚')
     }
@@ -169,16 +269,14 @@ export async function POST(request) {
     }
 
     const today = new Date().toISOString().split('T')[0]
-    const date = /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : today
     const pending = {
       type: parsed.type,
       amount,
       category_id: parsed.category_id || null,
       description: parsed.description || body.slice(0, 60),
-      date,
+      date: today,
     }
 
-    // Store as pending and ask for confirmation
     await supabase
       .from('profiles')
       .update({ whatsapp_pending: pending })
@@ -186,9 +284,10 @@ export async function POST(request) {
 
     const emoji = parsed.type === 'income' ? '💰' : '💸'
     const typeLabel = parsed.type === 'income' ? 'Ingreso' : 'Gasto'
+    const sourceLabel = mediaType.startsWith('audio/') ? ' 🎤' : mediaType.startsWith('image/') ? ' 🧾' : ''
 
     return twiml(
-      `${emoji} *${typeLabel}:* ${pending.description}\n` +
+      `${emoji} *${typeLabel}:*${sourceLabel} ${pending.description}\n` +
       `💵 *Monto:* ${fmt(amount)}\n\n` +
       `¿Lo registro? Responde *sí* para confirmar o *no* para cancelar.`
     )
