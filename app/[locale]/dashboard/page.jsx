@@ -87,7 +87,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <DashboardLayout>
+     <div className={styles.dashboard}>
       <div className={styles.dashboard}>
         {/* Header */}
         <div className={styles.pageHeader}>
@@ -211,6 +211,6 @@ export default function DashboardPage() {
         onClose={() => setModalOpen(false)}
         onSuccess={fetchData}
       />
-    </DashboardLayout>
+    </div>
   )
 }
