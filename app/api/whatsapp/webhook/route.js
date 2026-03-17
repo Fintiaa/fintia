@@ -125,10 +125,10 @@ export async function POST(request) {
       user_id: profile.id,
       type: parsed.type,
       amount,
-      category_id: parsed.category_id,
+      category_id: parsed.category_id || null,
       description: parsed.description || body.slice(0, 60),
       date,
-      source: 'whatsapp',
+      source: 'manual',
     })
 
     if (txError) {
