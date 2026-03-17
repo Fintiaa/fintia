@@ -5,23 +5,16 @@ import {
   Bell,
   AlertTriangle,
   XCircle,
-  CheckCircle,
   Check,
-  Zap,
-  ArrowRight,
 } from 'lucide-react'
-import { useAuth } from '@/lib/auth/AuthContext'
 import { getAlerts, markAlertAsRead, markAllAlertsAsRead } from '@/lib/supabase/alerts'
 import { getCategoryById } from '@/lib/data/categories'
 import styles from './page.module.css'
 
 export default function AlertsPage() {
-  const { profile } = useAuth()
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all') // 'all' | 'unread' | 'warning' | 'exceeded'
-
-  const isPremium = profile?.subscription_tier === 'premium'
 
   const fetchAlerts = async () => {
     try {
@@ -35,9 +28,8 @@ export default function AlertsPage() {
   }
 
   useEffect(() => {
-    if (isPremium) fetchAlerts()
-    else setLoading(false)
-  }, [isPremium])
+    fetchAlerts()
+  }, [])
 
   const handleMarkRead = async (id) => {
     try {
@@ -93,7 +85,7 @@ export default function AlertsPage() {
             <h1>Alertas</h1>
             <p>Notificaciones de sobre-gasto en tus presupuestos</p>
           </div>
-          {isPremium && unreadCount > 0 && (
+          {unreadCount > 0 && (
             <button className={styles.markAllBtn} onClick={handleMarkAllRead}>
               <Check size={16} />
               Marcar todo como leído
@@ -101,27 +93,7 @@ export default function AlertsPage() {
           )}
         </div>
 
-        {!isPremium ? (
-          <div className={styles.premiumGate}>
-            <div className={styles.premiumIcon}>
-              <Zap size={32} />
-            </div>
-            <h2>Funcionalidad Premium</h2>
-            <p>
-              Recibe alertas inteligentes cuando te acerques o superes los límites
-              de tus presupuestos configurados.
-            </p>
-            <ul className={styles.premiumFeatures}>
-              <li><CheckCircle size={16} /> Alerta al 80% del presupuesto</li>
-              <li><CheckCircle size={16} /> Alerta cuando excedas el límite</li>
-              <li><CheckCircle size={16} /> Historial de alertas completo</li>
-              <li><CheckCircle size={16} /> Generación en tiempo real</li>
-            </ul>
-            <button className={styles.upgradeBtn}>
-              Actualizar a Premium <ArrowRight size={18} />
-            </button>
-          </div>
-        ) : loading ? (
+        {loading ? (
           <p className={styles.loadingText}>Cargando alertas...</p>
         ) : (
           <>
