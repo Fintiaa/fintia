@@ -10,7 +10,6 @@ import {
   Zap,
   ArrowRight,
 } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { getAlerts, markAlertAsRead, markAllAlertsAsRead } from '@/lib/supabase/alerts'
 import { getCategoryById } from '@/lib/data/categories'
@@ -87,7 +86,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         <div className={styles.header}>
           <div>
@@ -209,6 +208,6 @@ export default function AlertsPage() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   )
 }

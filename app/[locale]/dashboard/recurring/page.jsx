@@ -1,7 +1,6 @@
 'use client'
 
 import { Plus, RefreshCw, Trash2, ToggleLeft, ToggleRight, X } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import { CATEGORIES, getCategoryById } from '@/lib/data/categories'
 import { useRecurring } from '@/lib/hooks/useRecurring'
 import CurrencyInput from '@/components/dashboard/CurrencyInput'
@@ -32,7 +31,7 @@ export default function RecurringPage() {
   const categories = CATEGORIES.filter((c) => c.type === form.type)
 
   return (
-    <DashboardLayout>
+    <>
       <div className={styles.page}>
         <div className={styles.header}>
           <div>
@@ -105,7 +104,7 @@ export default function RecurringPage() {
         )}
 
         <div className={styles.infoBox}>
-          <p>⏰ El sistema registra automáticamente cada transacción en Vercel el día 1 de cada mes a las 9am. Si el día configurado es mayor al 1, se ejecutará igualmente ese día.</p>
+          <p>⏰ El sistema registra automáticamente cada transacción el día del mes que configures, a las 9am.</p>
         </div>
       </div>
 
@@ -196,6 +195,6 @@ export default function RecurringPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   )
 }

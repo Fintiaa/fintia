@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { updateProfile } from '@/lib/supabase/profile'
 import styles from './page.module.css'
@@ -134,7 +133,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         <div className={styles.header}>
           <h1>Configuración</h1>
@@ -304,6 +303,6 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    
   )
 }

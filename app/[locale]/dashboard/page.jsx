@@ -11,7 +11,6 @@ import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
 import { getAllBudgetsWithSpending } from '@/lib/supabase/budgets'
-import { useTranslations } from 'next-intl'
 import { Target } from "lucide-react"
 import styles from './page.module.css'
 import { checkInactivity } from "@/lib/reminders"
@@ -23,32 +22,8 @@ export default function DashboardPage() {
   const locale = useLocale()
   const { user, profile } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
+  const [showReminder, setShowReminder] = useState(false)
 
-  const fetchData = async () => {
-    setLoading(true)
-    const now = new Date()
-    try {
-      const [monthStats, txns] = await Promise.all([
-        getMonthlyStats(now.getFullYear(), now.getMonth() + 1),
-        getTransactions({ limit: 5 })
-      ])
-      setStats(monthStats)
-      setRecent(txns)
-      if(txns.length > 0){
-
-        const inactive = checkInactivity(txns[0].date)
-        const enabled = localStorage.getItem("reminders") !== "false"
-        if(inactive && enabled){
-          setShowReminder(true)
-          sendReminderNotification()
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
   const {
     period,
     setPeriod,
@@ -60,6 +35,17 @@ export default function DashboardPage() {
     savingsRate,
     refetch: fetchData,
   } = useDashboardStats()
+
+  // Check inactivity after recent transactions load
+  useEffect(() => {
+    if (recent.length === 0) return
+    const inactive = checkInactivity(recent[0].date)
+    const enabled = localStorage.getItem('reminders') !== 'false'
+    if (inactive && enabled) {
+      setTimeout(() => setShowReminder(true), 0)
+      sendReminderNotification()
+    }
+  }, [recent])
 
   const isPremium = profile?.subscription_tier === 'premium'
   const [budgets, setBudgets] = useState([])
@@ -80,7 +66,7 @@ export default function DashboardPage() {
         .then(setBudgets)
         .catch(() => {})
       requestNotificationPermission()
-  }
+    }
   }
 
   const fmt = (n) =>
@@ -138,8 +124,7 @@ export default function DashboardPage() {
   ]
 
   return (
-     <div className={styles.dashboard}>
-      <div className={styles.dashboard}>
+    <div className={styles.dashboard}>
         {/* Header */}
         <div className={styles.pageHeader}>
           <div>
@@ -363,7 +348,6 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
-      </div>
 
       <TransactionModal
         isOpen={modalOpen}

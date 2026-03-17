@@ -15,7 +15,6 @@ import {
   XCircle,
   SkipForward,
 } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
@@ -220,7 +219,7 @@ export default function SyncPage() {
   }
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         <div className={styles.header}>
           <h1>Sincronización Gmail</h1>
@@ -407,6 +406,6 @@ export default function SyncPage() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   )
 }

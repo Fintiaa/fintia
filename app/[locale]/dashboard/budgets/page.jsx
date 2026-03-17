@@ -12,7 +12,6 @@ import {
   ArrowRight,
   X,
 } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { getAllBudgetsWithSpending, createBudget, updateBudget, deleteBudget } from '@/lib/supabase/budgets'
 import { getCategoryById, getCategoriesByType } from '@/lib/data/categories'
@@ -93,7 +92,7 @@ export default function BudgetsPage() {
   const usedCategoryIds = budgets.map((b) => b.category_id)
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         <div className={styles.header}>
           <div>
@@ -247,7 +246,7 @@ export default function BudgetsPage() {
           />
         )}
       </div>
-    </DashboardLayout>
+    
   )
 }
 

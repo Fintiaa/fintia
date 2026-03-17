@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { getUnreadAlertCount } from '@/lib/supabase/alerts';
 import AIChatWidget from '@/components/dashboard/AIChatWidget';
@@ -53,18 +54,27 @@ export default function DashboardLayout({ children }) {
   ];
 
   useEffect(() => {
-    async function fetchAlertCount() {
-      try {
-        const count = await getUnreadAlertCount();
-        setUnreadAlerts(count);
-      } catch {
-        // silently fail
-      }
-    }
-    if (isPremium) {
-      fetchAlertCount();
-    }
-  }, [isPremium, pathname]);
+    if (!isPremium || !user) return
+
+    // Initial fetch
+    getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
+
+    // Realtime subscription — updates badge instantly when new alert arrives
+    const supabase = createClient()
+    const channel = supabase
+      .channel('alerts-badge')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'alerts',
+        filter: `user_id=eq.${user.id}`,
+      }, () => {
+        getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [isPremium, user]);
 
   const handleSignOut = async () => {
     try {

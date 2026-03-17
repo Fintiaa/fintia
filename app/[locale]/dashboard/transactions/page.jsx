@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Plus, Search, Edit2, Trash2, X } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
 import { getCategoryById, CATEGORIES } from '@/lib/data/categories'
 import { useTransactions } from '@/lib/hooks/useTransactions'
@@ -63,7 +62,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         {/* Header */}
         <div className={styles.header}>
@@ -249,6 +248,6 @@ export default function TransactionsPage() {
         />
 
       </div>
-    </DashboardLayout>
+    
   )
 }
