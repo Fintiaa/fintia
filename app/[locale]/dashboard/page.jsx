@@ -10,7 +10,9 @@ import { useAuth } from '@/lib/auth/AuthContext'
 import { useTranslations } from 'next-intl'
 import { Target } from "lucide-react"
 import styles from './page.module.css'
-import { getGoals } from "@/lib/supabase/goals"
+import { checkInactivity } from "@/lib/reminders"
+import ReminderBanner from "@/components/reminders/ReminderBanner"
+import { sendReminderNotification, requestNotificationPermission } from "@/lib/notification"
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
@@ -19,7 +21,7 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
-  const [goals,setGoals] = useState([])
+  const [showReminder,setShowReminder] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -27,12 +29,19 @@ export default function DashboardPage() {
     try {
       const [monthStats, txns] = await Promise.all([
         getMonthlyStats(now.getFullYear(), now.getMonth() + 1),
-        getTransactions({ limit: 5 }),
-        getGoals(3)
+        getTransactions({ limit: 5 })
       ])
       setStats(monthStats)
       setRecent(txns)
-      setGoals(goals)
+      if(txns.length > 0){
+
+        const inactive = checkInactivity(txns[0].date)
+        const enabled = localStorage.getItem("reminders") !== "false"
+        if(inactive && enabled){
+          setShowReminder(true)
+          sendReminderNotification()
+        }
+      }
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
     } finally {
@@ -42,6 +51,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData()
+    requestNotificationPermission()
   }, [])
 
   const fmt = (n) =>
@@ -104,6 +114,8 @@ export default function DashboardPage() {
             {t('newTransaction')}
           </button>
         </div>
+
+        {showReminder && <ReminderBanner />}
 
         {/* Stats Cards */}
         <div className={styles.statsGrid}>
@@ -185,61 +197,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-
-        {/* Goals */}
-<div className={styles.card}>
-
-  <div className={styles.cardHeader}>
-    <h2>Metas</h2>
-    <Link href="/dashboard/goals" className={styles.viewAll}>
-      Ver todas
-    </Link>
-  </div>
-
-  {goals.length === 0 ? (
-    <p className={styles.loadingText}>
-      No tienes metas todavía
-    </p>
-  ) : (
-
-    <div className={styles.goalsList}>
-
-      {goals.map(goal=>{
-
-        const percent = Math.min(
-          (goal.saved / goal.target) * 100,
-          100
-        )
-
-        return(
-
-          <div key={goal.id} className={styles.goalItem}>
-
-            <div className={styles.goalHeader}>
-              <span>{goal.name}</span>
-              <span>
-                ${goal.saved} / ${goal.target}
-              </span>
-            </div>
-
-            <div className={styles.goalBar}>
-              <div
-                className={styles.goalProgress}
-                style={{width:`${percent}%`}}
-              />
-            </div>
-
-          </div>
-
-        )
-
-      })}
-
-    </div>
-
-  )}
-
-</div>
+        
 
         {/* Quick Actions */}
         <div className={styles.quickActions}>
