@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Save, CheckCircle, Zap, Star, Crown } from 'lucide-react'
+import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone } from 'lucide-react'
 import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { updateProfile } from '@/lib/supabase/profile'
@@ -55,6 +55,10 @@ export default function SettingsPage() {
   const [planLoading, setPlanLoading] = useState(false)
   const [planSuccess, setPlanSuccess] = useState(false)
 
+  const [whatsapp, setWhatsapp] = useState('')
+  const [whatsappLoading, setWhatsappLoading] = useState(false)
+  const [whatsappSaved, setWhatsappSaved] = useState(false)
+
   const currentPlan = profile?.subscription_tier || 'free'
   const isPremium = currentPlan === 'premium'
 
@@ -63,6 +67,9 @@ export default function SettingsPage() {
       const parts = profile.full_name.trim().split(' ')
       setFirstName(parts[0] || '')
       setLastName(parts.slice(1).join(' ') || '')
+    }
+    if (profile?.whatsapp_number) {
+      setWhatsapp(profile.whatsapp_number)
     }
   }, [profile])
 
@@ -89,6 +96,25 @@ export default function SettingsPage() {
       setError(err.message || 'Error al guardar los cambios.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleWhatsappSave = async () => {
+    const cleaned = whatsapp.replace(/\s/g, '')
+    if (cleaned && !/^\+\d{7,15}$/.test(cleaned)) {
+      setError('El número debe tener formato internacional: +573001234567')
+      return
+    }
+    setWhatsappLoading(true); setError('')
+    try {
+      await updateProfile(user.id, { whatsapp_number: cleaned || null })
+      refreshProfile()
+      setWhatsappSaved(true)
+      setTimeout(() => setWhatsappSaved(false), 3000)
+    } catch (err) {
+      setError(err.message || 'Error al guardar el número.')
+    } finally {
+      setWhatsappLoading(false)
     }
   }
 
@@ -215,6 +241,67 @@ export default function SettingsPage() {
           <p className={styles.planNote}>
             * Los pagos no están habilitados aún. Puedes cambiar de plan libremente durante el desarrollo.
           </p>
+        </div>
+
+        {/* WhatsApp */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>
+            <MessageCircle size={18} style={{ display: 'inline', marginRight: 8, color: '#25d366' }} />
+            Asistente por WhatsApp
+          </h2>
+
+          {!isPremium ? (
+            <div className={styles.whatsappLocked}>
+              <Crown size={28} className={styles.whatsappLockedIcon} />
+              <p>Vincula tu WhatsApp y registra gastos enviando un mensaje como <em>"gasté 20 mil en el almuerzo"</em>.</p>
+              <span className={styles.premiumOnlyTag}>Solo Premium</span>
+            </div>
+          ) : (
+            <>
+              <p className={styles.whatsappDesc}>
+                Vincula tu número de WhatsApp para registrar transacciones enviando un mensaje a Fintia.
+              </p>
+              <div className={styles.whatsappRow}>
+                <div className={styles.inputWrapper} style={{ flex: 1 }}>
+                  <Phone size={18} className={styles.inputIcon} />
+                  <input
+                    type="tel"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="+573001234567"
+                    className={styles.whatsappInput}
+                  />
+                </div>
+                <button
+                  className={styles.saveBtn}
+                  onClick={handleWhatsappSave}
+                  disabled={whatsappLoading}
+                >
+                  {whatsappSaved
+                    ? <><CheckCircle size={17} /> Guardado</>
+                    : whatsappLoading ? 'Guardando...' : <><Save size={17} /> Guardar</>}
+                </button>
+              </div>
+              <div className={styles.whatsappNumberCard}>
+                <MessageCircle size={18} style={{ color: '#25d366' }} />
+                <div>
+                  <p className={styles.whatsappNumberLabel}>Número de Fintia en WhatsApp</p>
+                  <p className={styles.whatsappNumber}>+1 (415) 523-8886</p>
+                </div>
+                <a
+                  href="https://wa.me/14155238886?text=Hola%20Fintia"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.whatsappOpenBtn}
+                >
+                  Abrir chat
+                </a>
+              </div>
+              <p className={styles.hint}>
+                Tu número en formato internacional. Ej: <strong>+573001234567</strong>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </DashboardLayout>
