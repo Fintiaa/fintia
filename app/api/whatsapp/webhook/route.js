@@ -84,10 +84,21 @@ function twilioAuthHeader() {
 
 async function fetchTwilioMedia(mediaUrl) {
   const auth = twilioAuthHeader()
-  const res = await fetch(mediaUrl, auth ? { headers: { Authorization: auth } } : {})
-  if (!res.ok) throw new Error(`Failed to fetch media: ${res.status}`)
+  if (!auth) {
+    console.error('fetchTwilioMedia: TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN not set')
+    throw new Error('Twilio credentials not configured')
+  }
+  const res = await fetch(mediaUrl, { headers: { Authorization: auth } })
+  if (!res.ok) {
+    console.error(`fetchTwilioMedia: HTTP ${res.status} for ${mediaUrl}`)
+    throw new Error(`Failed to fetch media: ${res.status}`)
+  }
   const buffer = await res.arrayBuffer()
   const contentType = res.headers.get('content-type') || 'application/octet-stream'
+  // Warn if image is large (>3MB base64 might exceed Groq limits)
+  if (buffer.byteLength > 3 * 1024 * 1024) {
+    console.warn(`fetchTwilioMedia: large file ${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB`)
+  }
   return { buffer, contentType }
 }
 
@@ -109,6 +120,12 @@ async function transcribeAudio(mediaUrl, groq) {
 
 async function analyzeReceipt(mediaUrl, groq) {
   const { buffer, contentType } = await fetchTwilioMedia(mediaUrl)
+
+  // Groq vision has ~4MB limit for base64 images
+  if (buffer.byteLength > 4 * 1024 * 1024) {
+    throw new Error('Image too large for vision model (>4MB)')
+  }
+
   const base64 = Buffer.from(buffer).toString('base64')
   const dataUrl = `data:${contentType};base64,${base64}`
 
@@ -254,6 +271,12 @@ export async function POST(request) {
         return twiml('No pude procesar el audio 😅 Intenta escribir el gasto.')
       }
       if (mediaType.startsWith('image/')) {
+        if (err.message?.includes('credentials')) {
+          return twiml('Error de configuración del servidor 🛠️ Contacta al administrador.')
+        }
+        if (err.message?.includes('large')) {
+          return twiml('La foto es muy grande 📷 Intenta con una imagen más pequeña o escribe el monto directamente.')
+        }
         return twiml('No pude leer la factura 😕 Intenta con una foto más clara o escribe el monto.')
       }
       return twiml('No entendí bien 😅 Intenta con algo como: _"Gasté 20 mil en el almuerzo"_')
