@@ -54,7 +54,7 @@ export default function DashboardPage() {
   }
 
   const fmt = (n) =>
-    new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-MX', { style: 'currency', currency: 'MXN' }).format(n)
+    new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(n)
 
   const fmtDate = (str) => {
     const [y, m, d] = str.split('-')
@@ -65,7 +65,7 @@ export default function DashboardPage() {
     yest.setDate(yest.getDate() - 1)
     if (date.getTime() === today.getTime()) return t('today')
     if (date.getTime() === yest.getTime()) return t('yesterday')
-    return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'es-MX', { day: 'numeric', month: 'short' })
+    return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'es-CO', { day: 'numeric', month: 'short' })
   }
 
   const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'usuario'

@@ -70,7 +70,7 @@ export default function AlertsPage() {
   const unreadCount = alerts.filter((a) => !a.is_read).length
 
   const fmt = (n) =>
-    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n)
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(n)
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr)
@@ -83,7 +83,7 @@ export default function AlertsPage() {
     if (diffMins < 60) return `Hace ${diffMins} min`
     if (diffHours < 24) return `Hace ${diffHours}h`
     if (diffDays < 7) return `Hace ${diffDays}d`
-    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
+    return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })
   }
 
   return (

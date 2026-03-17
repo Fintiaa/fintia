@@ -158,7 +158,7 @@ export default function SyncPage() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—'
-    return new Date(dateStr).toLocaleDateString('es-MX', {
+    return new Date(dateStr).toLocaleDateString('es-CO', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -352,7 +352,7 @@ export default function SyncPage() {
                         {email.parsed_data?.amount && (
                           <span className={styles.emailAmount}>
                             {email.parsed_data.type === 'income' ? '+' : '-'}
-                            ${Number(email.parsed_data.amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                            ${Number(email.parsed_data.amount).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
                           </span>
                         )}
                       </div>
