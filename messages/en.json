@@ -86,7 +86,14 @@
     "incomeLabel": "Income",
     "expensesLabel": "Expenses",
     "expensesByCategory": "Expenses by Category",
-    "noExpenses": "No expenses in this period"
+    "noExpenses": "No expenses in this period",
+    "budgetsTitle": "Budgets",
+    "viewBudgets": "View all",
+    "budgetExceeded": "Exceeded",
+    "budgetWarning": "Near limit",
+    "budgetOk": "On track",
+    "noBudgets": "No budgets configured",
+    "budgetOf": "of"
   },
   "Transactions": {
     "title": "Transactions",

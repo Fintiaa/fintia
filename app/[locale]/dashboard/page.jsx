@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight, PiggyBank } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight, PiggyBank, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -11,6 +11,7 @@ import MonthlyBarChart from '@/components/dashboard/MonthlyBarChart'
 import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
+import { getAllBudgetsWithSpending } from '@/lib/supabase/budgets'
 import styles from './page.module.css'
 
 export default function DashboardPage() {
@@ -30,6 +31,27 @@ export default function DashboardPage() {
     savingsRate,
     refetch: fetchData,
   } = useDashboardStats()
+
+  const isPremium = profile?.subscription_tier === 'premium'
+  const [budgets, setBudgets] = useState([])
+
+  useEffect(() => {
+    if (!isPremium) return
+    let cancelled = false
+    getAllBudgetsWithSpending()
+      .then((data) => { if (!cancelled) setBudgets(data) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [isPremium])
+
+  const handleTransactionSuccess = () => {
+    fetchData()
+    if (isPremium) {
+      getAllBudgetsWithSpending()
+        .then(setBudgets)
+        .catch(() => {})
+    }
+  }
 
   const fmt = (n) =>
     new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-MX', { style: 'currency', currency: 'MXN' }).format(n)
@@ -169,6 +191,63 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Budget Progress (Premium) */}
+        {isPremium && budgets.length > 0 && (
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2>{t('budgetsTitle')}</h2>
+              <Link href="/dashboard/budgets" className={styles.viewAll}>
+                {t('viewBudgets')}
+              </Link>
+            </div>
+            <div className={styles.budgetsList}>
+              {budgets.slice(0, 4).map((budget) => {
+                const cat = getCategoryById(budget.category_id)
+                const progressColor =
+                  budget.percentage >= 100 ? 'var(--error)' :
+                  budget.percentage >= 80 ? 'var(--warning)' : 'var(--success)'
+                const statusLabel =
+                  budget.percentage >= 100 ? t('budgetExceeded') :
+                  budget.percentage >= 80 ? t('budgetWarning') : t('budgetOk')
+
+                return (
+                  <div key={budget.id} className={styles.budgetItem}>
+                    <div className={styles.budgetHeader}>
+                      <span className={styles.budgetName}>
+                        {cat?.icon} {cat?.name || budget.category_id}
+                      </span>
+                      <span className={styles.budgetAmount}>
+                        {fmt(budget.spent)} {t('budgetOf')} {fmt(Number(budget.amount))}
+                      </span>
+                    </div>
+                    <div className={styles.budgetBar}>
+                      <div
+                        className={styles.budgetProgress}
+                        style={{
+                          width: `${Math.min(budget.percentage, 100)}%`,
+                          background: progressColor,
+                        }}
+                      />
+                    </div>
+                    <div className={styles.budgetHeader}>
+                      <span
+                        className={`${styles.budgetPercentage} ${budget.percentage >= 80 ? styles.warning : ''}`}
+                        style={{ color: progressColor }}
+                      >
+                        {budget.percentage >= 80 && <AlertTriangle size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />}
+                        {statusLabel}
+                      </span>
+                      <span className={styles.budgetPercentage}>
+                        {budget.percentage.toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Recent Transactions */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
@@ -252,7 +331,7 @@ export default function DashboardPage() {
       <TransactionModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSuccess={fetchData}
+        onSuccess={handleTransactionSuccess}
       />
     </DashboardLayout>
   )

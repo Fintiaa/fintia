@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import {
@@ -16,10 +16,13 @@ import {
   X,
   ChevronDown,
   Plus,
+  Mail,
+  AlertTriangle,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslations } from 'next-intl';
+import { getUnreadAlertCount } from '@/lib/supabase/alerts';
 import AIChatWidget from '@/components/dashboard/AIChatWidget';
 import styles from './DashboardLayout.module.css';
 
@@ -27,17 +30,38 @@ export default function DashboardLayout({ children }) {
   const t = useTranslations('Nav')
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  const isPremium = profile?.subscription_tier === 'premium';
 
   const navItems = [
     { icon: LayoutDashboard, label: t('dashboard'),    path: '/dashboard' },
     { icon: Wallet,          label: t('transactions'), path: '/dashboard/transactions' },
     { icon: RefreshCw,       label: t('recurring'),    path: '/dashboard/recurring' },
     { icon: PieChart,        label: t('budgets'),      path: '/dashboard/budgets' },
+    ...(isPremium ? [
+      { icon: AlertTriangle, label: 'Alertas', path: '/dashboard/alerts' },
+      { icon: Mail,          label: 'Sincronizar', path: '/dashboard/sync' },
+    ] : []),
     { icon: TrendingUp,      label: t('reports'),      path: '/dashboard/reports' },
   ];
+
+  useEffect(() => {
+    async function fetchAlertCount() {
+      try {
+        const count = await getUnreadAlertCount();
+        setUnreadAlerts(count);
+      } catch {
+        // silently fail
+      }
+    }
+    if (isPremium) {
+      fetchAlertCount();
+    }
+  }, [isPremium, pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -116,9 +140,11 @@ export default function DashboardLayout({ children }) {
               <span>{t('newExpense')}</span>
             </button>
 
-            <button className={styles.notificationBtn}>
+            <button className={styles.notificationBtn} onClick={() => router.push('/dashboard/alerts')}>
               <Bell size={20} />
-              <span className={styles.notificationBadge}>3</span>
+              {unreadAlerts > 0 && (
+                <span className={styles.notificationBadge}>{unreadAlerts}</span>
+              )}
             </button>
 
             <div className={styles.userMenu}>
