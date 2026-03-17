@@ -120,8 +120,8 @@ async function transcribeAudio(mediaUrl, groq) {
 
 async function analyzeReceipt(mediaUrl, groq) {
   const { buffer, contentType } = await fetchTwilioMedia(mediaUrl)
+  console.log(`analyzeReceipt: ${contentType}, ${(buffer.byteLength / 1024).toFixed(0)}KB`)
 
-  // Groq vision has ~4MB limit for base64 images
   if (buffer.byteLength > 4 * 1024 * 1024) {
     throw new Error('Image too large for vision model (>4MB)')
   }
@@ -129,22 +129,29 @@ async function analyzeReceipt(mediaUrl, groq) {
   const base64 = Buffer.from(buffer).toString('base64')
   const dataUrl = `data:${contentType};base64,${base64}`
 
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.2-11b-vision-preview',
-    messages: [
-      { role: 'system', content: RECEIPT_PROMPT },
-      {
-        role: 'user',
-        content: [
-          { type: 'image_url', image_url: { url: dataUrl } },
-          { type: 'text', text: 'Extrae la información de esta factura.' },
-        ],
-      },
-    ],
-    max_tokens: 300,
-    temperature: 0.1,
-  })
-  return completion.choices[0].message.content.trim()
+  try {
+    // Note: vision models don't support separate system messages with multimodal input
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.2-11b-vision-preview',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: dataUrl } },
+            { type: 'text', text: RECEIPT_PROMPT + '\n\nExtrae la información de esta factura o recibo.' },
+          ],
+        },
+      ],
+      max_tokens: 300,
+      temperature: 0.1,
+    })
+    const text = completion.choices[0].message.content.trim()
+    console.log('analyzeReceipt response:', text.slice(0, 200))
+    return text
+  } catch (groqErr) {
+    console.error('analyzeReceipt Groq error:', groqErr?.message, groqErr?.status, JSON.stringify(groqErr?.error))
+    throw groqErr
+  }
 }
 
 async function parseWithGroq(text, groq) {
