@@ -75,7 +75,7 @@ export default function BudgetsPage() {
   }
 
   const fmt = (n) =>
-    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n)
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(n)
 
   const getProgressColor = (percentage) => {
     if (percentage >= 100) return 'var(--error)'
@@ -323,7 +323,7 @@ function BudgetModal({ budget, usedCategoryIds, onClose, onSuccess }) {
           </div>
 
           <div className={styles.field}>
-            <label>Límite de gasto (MXN)</label>
+            <label>Límite de gasto (COP)</label>
             <input
               type="number"
               value={amount}

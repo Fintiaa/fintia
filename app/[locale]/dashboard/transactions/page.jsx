@@ -51,11 +51,11 @@ export default function TransactionsPage() {
   }
 
   const fmt = (amount) =>
-    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount)
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(amount)
 
   const fmtDate = (str) => {
     const [y, m, d] = str.split('-')
-    return new Date(+y, +m - 1, +d).toLocaleDateString('es-MX', {
+    return new Date(+y, +m - 1, +d).toLocaleDateString('es-CO', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

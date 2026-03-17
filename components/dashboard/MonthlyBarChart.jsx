@@ -6,10 +6,10 @@ import {
 } from 'recharts'
 
 const fmtCompact = (n) =>
-  new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', notation: 'compact', maximumFractionDigits: 1 }).format(n)
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', notation: 'compact', maximumFractionDigits: 1 }).format(n)
 
 const fmtFull = (n) =>
-  new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
