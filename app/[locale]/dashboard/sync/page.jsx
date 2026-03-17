@@ -217,7 +217,7 @@ export default function SyncPage() {
             <ul className={styles.premiumFeatures}>
               <li><CheckCircle size={16} /> Lectura automática de correos bancarios</li>
               <li><CheckCircle size={16} /> Categorización inteligente con AI</li>
-              <li><CheckCircle size={16} /> Soporte para bancos mexicanos (BBVA, Banorte, HSBC...)</li>
+              <li><CheckCircle size={16} /> Soporte para bancos colombianos (Bancolombia, Davivienda, Nequi...)</li>
               <li><CheckCircle size={16} /> Seguridad: solo lectura, tokens encriptados</li>
             </ul>
             <button className={styles.upgradeBtn}>
@@ -249,7 +249,7 @@ export default function SyncPage() {
                       permiso de <strong>lectura</strong>.
                     </p>
                     <div className={styles.bankLogos}>
-                      Bancos soportados: BBVA, Banorte, HSBC, Santander, Citibanamex, Scotiabank
+                      Bancos soportados: Bancolombia, Davivienda, BBVA, Nequi, Daviplata, Banco de Bogotá
                     </div>
                   </div>
                   <button
