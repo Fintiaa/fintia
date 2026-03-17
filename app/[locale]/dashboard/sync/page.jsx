@@ -83,6 +83,40 @@ export default function SyncPage() {
     if (user) fetchData()
   }, [user])
 
+  // Auto-sync every 5 minutes when connected
+  useEffect(() => {
+    if (!connection || !isPremium) return
+
+    const autoSync = async () => {
+      try {
+        const res = await fetch('/api/gmail/sync', { method: 'POST' })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.summary?.created > 0) {
+            setSyncResult(data.summary)
+            setMessage({
+              type: 'success',
+              text: `Auto-sync: ${data.summary.created} nuevas transacciones.`,
+            })
+            // Refresh synced emails list
+            const supabase = createClient()
+            const { data: emails } = await supabase
+              .from('synced_emails')
+              .select('*')
+              .order('created_at', { ascending: false })
+              .limit(20)
+            setSyncedEmails(emails || [])
+          }
+        }
+      } catch {
+        // Silent fail for auto-sync
+      }
+    }
+
+    const interval = setInterval(autoSync, 5 * 60 * 1000) // 5 minutes
+    return () => clearInterval(interval)
+  }, [connection, isPremium])
+
   const handleConnect = async () => {
     setConnecting(true)
     try {
@@ -117,11 +151,11 @@ export default function SyncPage() {
     }
   }
 
-  const handleSync = async () => {
+  const handleSync = async (full = false) => {
     setSyncing(true)
     setSyncResult(null)
     try {
-      const res = await fetch('/api/gmail/sync', { method: 'POST' })
+      const res = await fetch(`/api/gmail/sync${full ? '?full=true' : ''}`, { method: 'POST' })
       const data = await res.json()
 
       if (!res.ok) {
@@ -286,11 +320,20 @@ export default function SyncPage() {
                     <div className={styles.connectionActions}>
                       <button
                         className={styles.syncBtn}
-                        onClick={handleSync}
+                        onClick={() => handleSync(false)}
                         disabled={syncing}
                       >
                         <RefreshCw size={16} className={syncing ? styles.spinner : ''} />
                         {syncing ? 'Sincronizando...' : 'Sincronizar ahora'}
+                      </button>
+                      <button
+                        className={styles.syncBtn}
+                        onClick={() => handleSync(true)}
+                        disabled={syncing}
+                        style={{ background: 'var(--gray-600, #4b5563)' }}
+                      >
+                        <RefreshCw size={16} />
+                        Sync completo (90 días)
                       </button>
                       <button className={styles.disconnectBtn} onClick={handleDisconnect}>
                         <Unlink size={16} />
