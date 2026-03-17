@@ -132,7 +132,7 @@ async function analyzeReceipt(mediaUrl, groq) {
   try {
     // Note: vision models don't support separate system messages with multimodal input
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.2-11b-vision-preview',
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       messages: [
         {
           role: 'user',
