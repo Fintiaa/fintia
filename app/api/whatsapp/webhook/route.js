@@ -44,7 +44,8 @@ Responde ÚNICAMENTE con JSON válido:
   "amount": número_entero_total_en_COP,
   "type": "expense",
   "category_id": "una_de_las_categorías",
-  "description": "descripción breve del establecimiento o producto"
+  "description": "descripción breve del establecimiento o producto",
+  "date": "YYYY-MM-DD si aparece en la factura, o null si no se ve"
 }
 
 Si no puedes leer la factura, responde:
@@ -299,12 +300,13 @@ export async function POST(request) {
     }
 
     const today = new Date().toISOString().split('T')[0]
+    const parsedDate = parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : null
     const pending = {
       type: parsed.type,
       amount,
       category_id: parsed.category_id || null,
       description: parsed.description || body.slice(0, 60),
-      date: today,
+      date: parsedDate || today,
     }
 
     await supabase
@@ -316,10 +318,15 @@ export async function POST(request) {
     const typeLabel = parsed.type === 'income' ? 'Ingreso' : 'Gasto'
     const sourceLabel = mediaType.startsWith('audio/') ? ' 🎤' : mediaType.startsWith('image/') ? ' 🧾' : ''
 
+    const dateLabel = parsedDate
+      ? `📅 *Fecha:* ${parsedDate}\n`
+      : ''
+
     return twiml(
       `${emoji} *${typeLabel}:*${sourceLabel} ${pending.description}\n` +
-      `💵 *Monto:* ${fmt(amount)}\n\n` +
-      `¿Lo registro? Responde *sí* para confirmar o *no* para cancelar.`
+      `💵 *Monto:* ${fmt(amount)}\n` +
+      dateLabel +
+      `\n¿Lo registro? Responde *sí* para confirmar o *no* para cancelar.`
     )
   } catch (err) {
     console.error('WhatsApp webhook error:', err)
