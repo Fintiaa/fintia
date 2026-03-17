@@ -16,6 +16,9 @@ import styles from './page.module.css'
 import { checkInactivity } from "@/lib/reminders"
 import ReminderBanner from "@/components/reminders/ReminderBanner"
 import { sendReminderNotification, requestNotificationPermission } from "@/lib/notification"
+import { createClient as createSupabaseClient } from '@/lib/supabase/client'
+
+const supabase = createSupabaseClient()
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
@@ -41,11 +44,24 @@ export default function DashboardPage() {
     if (recent.length === 0) return
     const inactive = checkInactivity(recent[0].date)
     const enabled = localStorage.getItem('reminders') !== 'false'
-    if (inactive && enabled) {
-      setTimeout(() => setShowReminder(true), 0)
-      sendReminderNotification()
+    if (!inactive || !enabled) return
+
+    setTimeout(() => setShowReminder(true), 0)
+    sendReminderNotification()
+
+    // Send email reminder (once per session using sessionStorage)
+    const alreadySent = sessionStorage.getItem('reminderEmailSent')
+    if (!alreadySent && user) {
+      sessionStorage.setItem('reminderEmailSent', '1')
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) return
+        fetch('/api/reminders/notify', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }).catch(() => {})
+      })
     }
-  }, [recent])
+  }, [recent, user])
 
   const isPremium = profile?.subscription_tier === 'premium'
   const [budgets, setBudgets] = useState([])

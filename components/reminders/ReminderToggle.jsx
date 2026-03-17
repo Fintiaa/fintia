@@ -1,14 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export default function ReminderToggle() {
-  const [enabled, setEnabled] = useState(true)
-
-  useEffect(() => {
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true
     const saved = localStorage.getItem('reminders')
-    if (saved !== null) setEnabled(saved === 'true')
-  }, [])
+    return saved !== null ? saved === 'true' : true
+  })
 
   const toggle = () => {
     const newValue = !enabled
