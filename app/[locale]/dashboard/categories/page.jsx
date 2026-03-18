@@ -118,184 +118,182 @@ export default function CategoriesPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className={styles.page}>
-        <div className={styles.header}>
-          <h1>{t('title')}</h1>
-          <p>{t('subtitle')}</p>
+    <div className={styles.page}>
+    <div className={styles.header}>
+        <h1>{t('title')}</h1>
+        <p>{t('subtitle')}</p>
+    </div>
+
+    <div className={styles.card}>
+        <h2>{editingId ? t('edit') : t('new')}</h2>
+
+        <form onSubmit={onSubmit} className={styles.form}>
+        <div className={styles.row}>
+            <label htmlFor="category-name">{t('name')}</label>
+            <input
+            id="category-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej. Transporte"
+            />
         </div>
 
-        <div className={styles.card}>
-          <h2>{editingId ? t('edit') : t('new')}</h2>
+        <div className={styles.row}>
+            <label htmlFor="category-type">{t('type')}</label>
+            <select
+            id="category-type"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            >
+            <option value="expense">Gasto</option>
+            <option value="income">Ingreso</option>
+            </select>
+        </div>
 
-          <form onSubmit={onSubmit} className={styles.form}>
-            <div className={styles.row}>
-              <label htmlFor="category-name">{t('name')}</label>
-              <input
-                id="category-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ej. Transporte"
-              />
-            </div>
+        <div className={styles.row}>
+            <label>{t('icon')}</label>
 
-            <div className={styles.row}>
-              <label htmlFor="category-type">{t('type')}</label>
-              <select
-                id="category-type"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              >
-                <option value="expense">Gasto</option>
-                <option value="income">Ingreso</option>
-              </select>
-            </div>
+            <div className={styles.iconSelector}>
+            <button
+                type="button"
+                className={styles.emojiTrigger}
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+            >
+                <span className={styles.emojiPreview}>{icon || '🙂'}</span>
+                <span>{icon ? 'Cambiar emoji' : 'Seleccionar emoji'}</span>
+            </button>
 
-            <div className={styles.row}>
-              <label>{t('icon')}</label>
-
-              <div className={styles.iconSelector}>
+            {icon && (
                 <button
-                  type="button"
-                  className={styles.emojiTrigger}
-                  onClick={() => setShowEmojiPicker((prev) => !prev)}
+                type="button"
+                className={styles.clearEmoji}
+                onClick={() => setIcon('')}
                 >
-                  <span className={styles.emojiPreview}>{icon || '🙂'}</span>
-                  <span>{icon ? 'Cambiar emoji' : 'Seleccionar emoji'}</span>
+                Quitar
                 </button>
+            )}
+            </div>
 
-                {icon && (
-                  <button
-                    type="button"
-                    className={styles.clearEmoji}
-                    onClick={() => setIcon('')}
-                  >
-                    Quitar
-                  </button>
-                )}
-              </div>
+            {showEmojiPicker && (
+            <div className={styles.pickerWrapper}>
+                <EmojiPicker
+                onEmojiClick={onEmojiClick}
+                lazyLoadEmojis
+                searchDisabled={false}
+                skinTonesDisabled
+                previewConfig={{ showPreview: false }}
+                width="100%"
+                height={350}
+                />
+            </div>
+            )}
+        </div>
 
-              {showEmojiPicker && (
-                <div className={styles.pickerWrapper}>
-                  <EmojiPicker
-                    onEmojiClick={onEmojiClick}
-                    lazyLoadEmojis
-                    searchDisabled={false}
-                    skinTonesDisabled
-                    previewConfig={{ showPreview: false }}
-                    width="100%"
-                    height={350}
-                  />
+        <div className={styles.row}>
+            <label htmlFor="category-color">{t('color')}</label>
+            <input
+            id="category-color"
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            className={styles.colorInput}
+            />
+        </div>
+
+        <div className={styles.actions}>
+            <button type="submit" className={styles.primary} disabled={loading}>
+            {editingId ? t('update') : t('add')}
+            </button>
+
+            {editingId && (
+            <button
+                type="button"
+                className={styles.secondary}
+                onClick={resetForm}
+            >
+                {t('cancel')}
+            </button>
+            )}
+        </div>
+
+        {message && <p className={styles.message}>{message}</p>}
+        {error && <p className={styles.error}>{error}</p>}
+        </form>
+    </div>
+
+    <div className={styles.categoriesGrid}>
+        <div className={styles.categoryGroup}>
+        <div className={styles.groupHeader}>
+            <h3>{t('defaultCategories')}</h3>
+        </div>
+
+        <div className={styles.list}>
+            {defaultCategories.map((cat) => (
+            <div key={cat.id} className={styles.categoryTile}>
+                <span
+                className={styles.icon}
+                style={{ backgroundColor: cat.color }}
+                >
+                {cat.icon || '•'}
+                </span>
+
+                <div className={styles.categoryInfo}>
+                <p className={styles.categoryName}>{cat.name}</p>
+                <small className={styles.categoryType}>
+                    {typeLabel(cat.type)}
+                </small>
                 </div>
-              )}
             </div>
-
-            <div className={styles.row}>
-              <label htmlFor="category-color">{t('color')}</label>
-              <input
-                id="category-color"
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className={styles.colorInput}
-              />
-            </div>
-
-            <div className={styles.actions}>
-              <button type="submit" className={styles.primary} disabled={loading}>
-                {editingId ? t('update') : t('add')}
-              </button>
-
-              {editingId && (
-                <button
-                  type="button"
-                  className={styles.secondary}
-                  onClick={resetForm}
-                >
-                  {t('cancel')}
-                </button>
-              )}
-            </div>
-
-            {message && <p className={styles.message}>{message}</p>}
-            {error && <p className={styles.error}>{error}</p>}
-          </form>
+            ))}
+        </div>
         </div>
 
-        <div className={styles.categoriesGrid}>
-          <div className={styles.categoryGroup}>
-            <div className={styles.groupHeader}>
-              <h3>{t('defaultCategories')}</h3>
-            </div>
+        <div className={styles.categoryGroup}>
+        <div className={styles.groupHeader}>
+            <h3>{t('customCategories')}</h3>
+            <p className={styles.limitText}>
+            {t('customLimit', { count: customCount, max: 20 })}
+            </p>
+        </div>
 
-            <div className={styles.list}>
-              {defaultCategories.map((cat) => (
+        <div className={styles.list}>
+            {customCategories.length === 0 ? (
+            <p className={styles.emptyText}>{t('noCustom')}</p>
+            ) : (
+            customCategories.map((cat) => (
                 <div key={cat.id} className={styles.categoryTile}>
-                  <span
+                <span
                     className={styles.icon}
                     style={{ backgroundColor: cat.color }}
-                  >
+                >
                     {cat.icon || '•'}
-                  </span>
+                </span>
 
-                  <div className={styles.categoryInfo}>
+                <div className={styles.categoryInfo}>
                     <p className={styles.categoryName}>{cat.name}</p>
                     <small className={styles.categoryType}>
-                      {typeLabel(cat.type)}
+                    {typeLabel(cat.type)}
                     </small>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className={styles.categoryGroup}>
-            <div className={styles.groupHeader}>
-              <h3>{t('customCategories')}</h3>
-              <p className={styles.limitText}>
-                {t('customLimit', { count: customCount, max: 20 })}
-              </p>
-            </div>
-
-            <div className={styles.list}>
-              {customCategories.length === 0 ? (
-                <p className={styles.emptyText}>{t('noCustom')}</p>
-              ) : (
-                customCategories.map((cat) => (
-                  <div key={cat.id} className={styles.categoryTile}>
-                    <span
-                      className={styles.icon}
-                      style={{ backgroundColor: cat.color }}
+                <div className={styles.actionsInline}>
+                    <button type="button" onClick={() => startEdit(cat)}>
+                    {t('edit')}
+                    </button>
+                    <button
+                    type="button"
+                    onClick={() => onDelete(cat.id)}
+                    className={styles.deleteBtn}
                     >
-                      {cat.icon || '•'}
-                    </span>
-
-                    <div className={styles.categoryInfo}>
-                      <p className={styles.categoryName}>{cat.name}</p>
-                      <small className={styles.categoryType}>
-                        {typeLabel(cat.type)}
-                      </small>
-                    </div>
-
-                    <div className={styles.actionsInline}>
-                      <button type="button" onClick={() => startEdit(cat)}>
-                        {t('edit')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(cat.id)}
-                        className={styles.deleteBtn}
-                      >
-                        {t('delete')}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+                    {t('delete')}
+                    </button>
+                </div>
+                </div>
+            ))
+            )}
         </div>
-      </div>
-    </DashboardLayout>
+        </div>
+    </div>
+    </div>
   )
 }
