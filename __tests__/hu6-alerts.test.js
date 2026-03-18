@@ -77,11 +77,14 @@ describe('HU-6: getAlerts', () => {
 
   test('filtra solo alertas no leídas con unreadOnly: true', async () => {
     const chain = buildChain(null)
-    chain.limit = jest.fn().mockResolvedValue({ data: [{ id: 'a-1', is_read: false }], error: null })
+    // limit returns the chain so .eq() can be chained after it
+    const afterLimit = {}
+    afterLimit.eq = jest.fn().mockResolvedValue({ data: [{ id: 'a-1', is_read: false }], error: null })
+    chain.limit = jest.fn().mockReturnValue(afterLimit)
     mockFrom.mockReturnValue(chain)
 
     const result = await getAlerts({ unreadOnly: true })
-    expect(chain.eq).toHaveBeenCalledWith('is_read', false)
+    expect(afterLimit.eq).toHaveBeenCalledWith('is_read', false)
     expect(result).toHaveLength(1)
   })
 
