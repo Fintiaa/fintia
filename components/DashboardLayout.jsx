@@ -20,9 +20,11 @@ import {
   AlertTriangle,
   Lock,
   Crown,
+  Target,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
 import { getUnreadAlertCount } from '@/lib/supabase/alerts';
 import AIChatWidget from '@/components/dashboard/AIChatWidget';
@@ -48,25 +50,43 @@ export default function DashboardLayout({ children }) {
   ];
 
   const premiumNavItems = [
+    { icon: PieChart,      label: t('budgets'),              path: '/dashboard/budgets' },
     { icon: TrendingUp,   label: t('reports'),        path: '/dashboard/reports' },
-    { icon: AlertTriangle, label: 'Alertas inteligentes', path: '/dashboard/alerts' },
-    { icon: Mail,          label: 'Sincronizar Gmail',    path: '/dashboard/sync' },
+    { icon: AlertTriangle, label: 'Alertas inteligentes',    path: '/dashboard/alerts' },
+    { icon: TrendingUp,    label: t('reports'),              path: '/dashboard/reports' },
+    { icon: Target,        label: 'Objetivos de ahorro',     path: '/dashboard/goals' },
+    { icon: Mail,          label: 'Sincronizar Gmail',       path: '/dashboard/sync' },
     { icon: PieChart,      label: t('insights'),       path: '/dashboard/insights' },
   ];
 
   useEffect(() => {
-    async function fetchAlertCount() {
-      try {
-        const count = await getUnreadAlertCount();
-        setUnreadAlerts(count);
-      } catch {
-        // silently fail
-      }
+    if (!isPremium || !user) return
+
+    const refresh = () => getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
+
+    // Initial fetch
+    refresh()
+
+    // Realtime subscription — updates badge instantly when new alert arrives
+    const supabase = createClient()
+    const channel = supabase
+      .channel('alerts-badge')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'alerts',
+        filter: `user_id=eq.${user.id}`,
+      }, refresh)
+      .subscribe()
+
+    // Polling fallback every 30s in case Realtime is not enabled on the table
+    const poll = setInterval(refresh, 30_000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(poll)
     }
-    if (isPremium) {
-      fetchAlertCount();
-    }
-  }, [isPremium, pathname]);
+  }, [isPremium, user]);
 
   const handleSignOut = async () => {
     try {

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { TrendingUp, DollarSign, CreditCard, Plus, ArrowUpRight, ArrowDownRight, PiggyBank, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import DashboardLayout from '@/components/DashboardLayout'
 import TransactionModal from '@/components/dashboard/TransactionModal'
 import ExpensesPieChart from '@/components/dashboard/ExpensesPieChart'
 import MonthlyBarChart from '@/components/dashboard/MonthlyBarChart'
@@ -12,13 +11,21 @@ import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
 import { getAllBudgetsWithSpending } from '@/lib/supabase/budgets'
+import { Target } from "lucide-react"
 import styles from './page.module.css'
+import { checkInactivity } from "@/lib/reminders"
+import ReminderBanner from "@/components/reminders/ReminderBanner"
+import { sendReminderNotification, requestNotificationPermission } from "@/lib/notification"
+import { createClient as createSupabaseClient } from '@/lib/supabase/client'
+
+const supabase = createSupabaseClient()
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
   const locale = useLocale()
   const { user, profile } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
+  const [showReminder, setShowReminder] = useState(false)
 
   const {
     period,
@@ -31,6 +38,30 @@ export default function DashboardPage() {
     savingsRate,
     refetch: fetchData,
   } = useDashboardStats()
+
+  // Check inactivity after recent transactions load
+  useEffect(() => {
+    if (recent.length === 0) return
+    const inactive = checkInactivity(recent[0].date)
+    const enabled = localStorage.getItem('reminders') !== 'false'
+    if (!inactive || !enabled) return
+
+    setTimeout(() => setShowReminder(true), 0)
+    sendReminderNotification()
+
+    // Send email reminder (once per session using sessionStorage)
+    const alreadySent = sessionStorage.getItem('reminderEmailSent')
+    if (!alreadySent && user) {
+      sessionStorage.setItem('reminderEmailSent', '1')
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) return
+        fetch('/api/reminders/notify', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }).catch(() => {})
+      })
+    }
+  }, [recent, user])
 
   const isPremium = profile?.subscription_tier === 'premium'
   const [budgets, setBudgets] = useState([])
@@ -50,6 +81,7 @@ export default function DashboardPage() {
       getAllBudgetsWithSpending()
         .then(setBudgets)
         .catch(() => {})
+      requestNotificationPermission()
     }
   }
 
@@ -108,8 +140,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <DashboardLayout>
-      <div className={styles.dashboard}>
+    <div className={styles.dashboard}>
         {/* Header */}
         <div className={styles.pageHeader}>
           <div>
@@ -132,6 +163,8 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        {showReminder && <ReminderBanner />}
 
         {/* Stats Cards */}
         <div className={styles.statsGrid}>
@@ -303,6 +336,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        
 
         {/* Quick Actions */}
         <div className={styles.quickActions}>
@@ -324,15 +358,18 @@ export default function DashboardPage() {
               <span className={styles.actionIcon}>📊</span>
               <span>{t('reports')}</span>
             </Link>
+             <Link href="/dashboard/goals" className={styles.actionCard}>
+                <Target size={18}/>
+                <span>{t('goals')}</span>
+            </Link>
           </div>
         </div>
-      </div>
 
       <TransactionModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSuccess={handleTransactionSuccess}
       />
-    </DashboardLayout>
+    </div>
   )
 }

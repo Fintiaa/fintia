@@ -9,13 +9,10 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
-  Zap,
   Shield,
-  ArrowRight,
   XCircle,
   SkipForward,
 } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import styles from './page.module.css'
@@ -220,7 +217,7 @@ export default function SyncPage() {
   }
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         <div className={styles.header}>
           <h1>Sincronización Gmail</h1>
@@ -236,30 +233,7 @@ export default function SyncPage() {
           </div>
         )}
 
-        {/* Premium Gate */}
-        {!isPremium ? (
-          <div className={styles.premiumGate}>
-            <div className={styles.premiumIcon}>
-              <Zap size={32} />
-            </div>
-            <h2>Funcionalidad Premium</h2>
-            <p>
-              La sincronización automática de transacciones desde Gmail está disponible
-              en el plan Premium. Conecta tu correo y deja que Fintia registre tus
-              gastos automáticamente.
-            </p>
-            <ul className={styles.premiumFeatures}>
-              <li><CheckCircle size={16} /> Lectura automática de correos bancarios</li>
-              <li><CheckCircle size={16} /> Categorización inteligente con AI</li>
-              <li><CheckCircle size={16} /> Soporte para bancos colombianos (Bancolombia, Lulo Bank, Davivienda, Nequi...)</li>
-              <li><CheckCircle size={16} /> Seguridad: solo lectura, tokens encriptados</li>
-            </ul>
-            <button className={styles.upgradeBtn}>
-              Actualizar a Premium
-              <ArrowRight size={18} />
-            </button>
-          </div>
-        ) : loading ? (
+        {loading ? (
           <div className={styles.loadingState}>
             <RefreshCw size={24} className={styles.spinner} />
             <p>Cargando...</p>
@@ -407,6 +381,6 @@ export default function SyncPage() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   )
 }

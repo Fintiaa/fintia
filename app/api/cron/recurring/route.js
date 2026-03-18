@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { checkBudgetsAndSendEmails } from '@/lib/supabase/alertsServer'
 
 // Cliente admin que bypasea RLS para procesar todos los usuarios
 function createAdminClient() {
@@ -72,8 +73,14 @@ export async function GET(request) {
       }
     }
 
+    // Check budgets and send email alerts (non-blocking)
+    const alertResults = await checkBudgetsAndSendEmails().catch((err) => {
+      console.error('Budget alert check error:', err.message)
+      return { checked: 0, alerts: 0 }
+    })
+
     console.log(`Cron recurring: ${JSON.stringify(results)}`)
-    return Response.json({ success: true, month: currentMonth, ...results })
+    return Response.json({ success: true, month: currentMonth, ...results, alertResults })
   } catch (error) {
     console.error('Cron error:', error)
     return Response.json({ error: error.message }, { status: 500 })

@@ -93,7 +93,8 @@
     "budgetWarning": "Cerca del límite",
     "budgetOk": "En control",
     "noBudgets": "Sin presupuestos configurados",
-    "budgetOf": "de"
+    "budgetOf": "de",
+    "goals": "Metas"
   },
   "Transactions": {
     "title": "Transacciones",

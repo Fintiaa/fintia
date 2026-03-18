@@ -7,26 +7,18 @@ import {
   Edit3,
   Trash2,
   AlertTriangle,
-  CheckCircle,
-  Zap,
-  ArrowRight,
   X,
 } from 'lucide-react'
-import DashboardLayout from '@/components/DashboardLayout'
-import { useAuth } from '@/lib/auth/AuthContext'
 import { getAllBudgetsWithSpending, createBudget, updateBudget, deleteBudget } from '@/lib/supabase/budgets'
 import { getCategoryById, getCategoriesByType } from '@/lib/data/categories'
 import styles from './page.module.css'
 
 export default function BudgetsPage() {
-  const { profile } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingBudget, setEditingBudget] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-
-  const isPremium = profile?.subscription_tier === 'premium'
 
   const fetchBudgets = async () => {
     try {
@@ -40,9 +32,8 @@ export default function BudgetsPage() {
   }
 
   useEffect(() => {
-    if (isPremium) fetchBudgets()
-    else setLoading(false)
-  }, [isPremium])
+    fetchBudgets()
+  }, [])
 
   const handleDelete = async (id) => {
     try {
@@ -93,43 +84,20 @@ export default function BudgetsPage() {
   const usedCategoryIds = budgets.map((b) => b.category_id)
 
   return (
-    <DashboardLayout>
+    
       <div className={styles.page}>
         <div className={styles.header}>
           <div>
             <h1>Presupuestos</h1>
             <p>Configura límites de gasto por categoría</p>
           </div>
-          {isPremium && (
-            <button className={styles.newBtn} onClick={handleCreate}>
-              <Plus size={18} />
-              Nuevo presupuesto
-            </button>
-          )}
+          <button className={styles.newBtn} onClick={handleCreate}>
+            <Plus size={18} />
+            Nuevo presupuesto
+          </button>
         </div>
 
-        {/* Premium Gate */}
-        {!isPremium ? (
-          <div className={styles.premiumGate}>
-            <div className={styles.premiumIcon}>
-              <Zap size={32} />
-            </div>
-            <h2>Funcionalidad Premium</h2>
-            <p>
-              Configura presupuestos por categoría para controlar tus gastos mensuales.
-              Recibe alertas cuando te acerques a tus límites.
-            </p>
-            <ul className={styles.premiumFeatures}>
-              <li><CheckCircle size={16} /> Límites de gasto por categoría</li>
-              <li><CheckCircle size={16} /> Barras de progreso visual</li>
-              <li><CheckCircle size={16} /> Alertas al 80% y 100% del límite</li>
-              <li><CheckCircle size={16} /> Períodos mensuales o semanales</li>
-            </ul>
-            <button className={styles.upgradeBtn}>
-              Actualizar a Premium <ArrowRight size={18} />
-            </button>
-          </div>
-        ) : loading ? (
+        {loading ? (
           <p className={styles.loadingText}>Cargando presupuestos...</p>
         ) : budgets.length === 0 ? (
           <div className={styles.emptyState}>
@@ -247,7 +215,7 @@ export default function BudgetsPage() {
           />
         )}
       </div>
-    </DashboardLayout>
+    
   )
 }
 

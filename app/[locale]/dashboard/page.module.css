@@ -488,3 +488,36 @@
 .emptyBtn:hover {
   background: var(--primary-100);
 }
+
+.goalsList{
+display:flex;
+flex-direction:column;
+gap:16px;
+margin-top:10px;
+}
+
+.goalItem{
+display:flex;
+flex-direction:column;
+gap:6px;
+}
+
+.goalHeader{
+display:flex;
+justify-content:space-between;
+font-size:14px;
+font-weight:500;
+}
+
+.goalBar{
+height:8px;
+background:#eee;
+border-radius:6px;
+overflow:hidden;
+}
+
+.goalProgress{
+height:100%;
+background:linear-gradient(90deg,#22c55e,#4ade80);
+border-radius:6px;
+}

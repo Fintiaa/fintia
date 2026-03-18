@@ -1,4 +1,5 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
+import DashboardLayout from '@/components/DashboardLayout'
 
 export const metadata = {
   title: 'Dashboard - Fintia',
@@ -8,7 +9,9 @@ export const metadata = {
 export default function DashboardRootLayout({ children }) {
   return (
     <ProtectedRoute>
-      {children}
+      <DashboardLayout>
+        {children}
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }
