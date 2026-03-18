@@ -390,148 +390,146 @@ export default function ReportsPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className={styles.page}>
-        <div className={styles.header}>
-          <div>
-            <h1>{t('title')}</h1>
-            <p>{t('subtitle')}</p>
-          </div>
+    <div className={styles.page}>
+    <div className={styles.header}>
+        <div>
+        <h1>{t('title')}</h1>
+        <p>{t('subtitle')}</p>
+        </div>
+    </div>
+
+    <div className={styles.controls}>
+        <div className={styles.controlGroup}>
+        <label>{t('fromDate')}</label>
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        </div>
+        <div className={styles.controlGroup}>
+        <label>{t('toDate')}</label>
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+        <div className={styles.controlGroup}>
+        <label>{t('reportType')}</label>
+        <select value={reportType} onChange={(e) => setReportType(e.target.value)}>
+            <option value="complete">{t('reportTypes.complete')}</option>
+            <option value="income">{t('reportTypes.income')}</option>
+            <option value="expenses">{t('reportTypes.expenses')}</option>
+            <option value="budgets">{t('reportTypes.budgets')}</option>
+        </select>
+        </div>
+        <button className={styles.generateBtn} onClick={fetchReport} disabled={loading}>
+        <Download size={16} /> {loading ? t('loading') : t('generate')}
+        </button>
+    </div>
+
+    {error && <div className={styles.error}>{error}</div>}
+
+    {notification && (
+        <div className={styles.notification + ' ' + styles[notification.type]}>
+        {notification.message}
+        </div>
+    )}
+
+    {loading && <p className={styles.status}>{t('loading')}</p>}
+
+    {!loading && reportReady && (
+        <>
+        <div className={styles.cardSummary}>
+            <div>
+            <strong>{t('summaryCount')}:</strong> {rowCount}
+            </div>
+            {reportType === 'budgets' ? (
+            <>
+                <div>
+                <strong>{t('summaryBudget')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.totalBudget || 0)}
+                </div>
+                <div>
+                <strong>{t('summarySpent')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.totalSpent || 0)}
+                </div>
+                <div>
+                <strong>{t('summaryProgress')}:</strong> {totals.totalProgress.toFixed(2)}%
+                </div>
+            </>
+            ) : (
+            <>
+                <div>
+                <strong>{t('summaryIncome')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.income || 0)}
+                </div>
+                <div>
+                <strong>{t('summaryExpenses')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.expenses || 0)}
+                </div>
+                <div>
+                <strong>{t('summaryBalance')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format((totals.income || 0) - (totals.expenses || 0))}
+                </div>
+            </>
+            )}
         </div>
 
-        <div className={styles.controls}>
-          <div className={styles.controlGroup}>
-            <label>{t('fromDate')}</label>
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-          </div>
-          <div className={styles.controlGroup}>
-            <label>{t('toDate')}</label>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-          </div>
-          <div className={styles.controlGroup}>
-            <label>{t('reportType')}</label>
-            <select value={reportType} onChange={(e) => setReportType(e.target.value)}>
-              <option value="complete">{t('reportTypes.complete')}</option>
-              <option value="income">{t('reportTypes.income')}</option>
-              <option value="expenses">{t('reportTypes.expenses')}</option>
-              <option value="budgets">{t('reportTypes.budgets')}</option>
-            </select>
-          </div>
-          <button className={styles.generateBtn} onClick={fetchReport} disabled={loading}>
-            <Download size={16} /> {loading ? t('loading') : t('generate')}
-          </button>
+        <div className={styles.actions}>
+            <button className={styles.exportBtn} onClick={downloadCsv}>
+            <FileText size={16} /> {t('downloadCsv')}
+            </button>
+            <button className={styles.exportBtn} onClick={downloadXls}>
+            <FileSpreadsheet size={16} /> {t('downloadXlsx')}
+            </button>
+            <button className={styles.exportBtn} onClick={downloadPdf} disabled={rowCount === 0}>
+            <FileText size={16} /> {t('downloadPdf')}
+            </button>
         </div>
+        </>
+    )}
 
-        {error && <div className={styles.error}>{error}</div>}
+    {!loading && !reportReady && <p className={styles.status}>{t('noData')}</p>}
 
-        {notification && (
-          <div className={styles.notification + ' ' + styles[notification.type]}>
-            {notification.message}
-          </div>
-        )}
-
-        {loading && <p className={styles.status}>{t('loading')}</p>}
-
-        {!loading && reportReady && (
-          <>
-            <div className={styles.cardSummary}>
-              <div>
-                <strong>{t('summaryCount')}:</strong> {rowCount}
-              </div>
-              {reportType === 'budgets' ? (
+    {!loading && reportReady && (
+        <div className={styles.preview}>
+        <table>
+            <thead>
+            <tr>
+                {reportType === 'budgets' ? (
                 <>
-                  <div>
-                    <strong>{t('summaryBudget')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.totalBudget || 0)}
-                  </div>
-                  <div>
-                    <strong>{t('summarySpent')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.totalSpent || 0)}
-                  </div>
-                  <div>
-                    <strong>{t('summaryProgress')}:</strong> {totals.totalProgress.toFixed(2)}%
-                  </div>
+                    <th>{t('colCategory')}</th>
+                    <th>{t('colPeriod')}</th>
+                    <th>{t('colBudget')}</th>
+                    <th>{t('colSpent')}</th>
+                    <th>{t('colProgress')}</th>
                 </>
-              ) : (
+                ) : (
                 <>
-                  <div>
-                    <strong>{t('summaryIncome')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.income || 0)}
-                  </div>
-                  <div>
-                    <strong>{t('summaryExpenses')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(totals.expenses || 0)}
-                  </div>
-                  <div>
-                    <strong>{t('summaryBalance')}:</strong> {new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format((totals.income || 0) - (totals.expenses || 0))}
-                  </div>
+                    <th>{t('colDate')}</th>
+                    <th>{t('colType')}</th>
+                    <th>{t('colCategory')}</th>
+                    <th>{t('colDescription')}</th>
+                    <th>{t('colAmount')}</th>
                 </>
-              )}
-            </div>
-
-            <div className={styles.actions}>
-              <button className={styles.exportBtn} onClick={downloadCsv}>
-                <FileText size={16} /> {t('downloadCsv')}
-              </button>
-              <button className={styles.exportBtn} onClick={downloadXls}>
-                <FileSpreadsheet size={16} /> {t('downloadXlsx')}
-              </button>
-              <button className={styles.exportBtn} onClick={downloadPdf} disabled={rowCount === 0}>
-                <FileText size={16} /> {t('downloadPdf')}
-              </button>
-            </div>
-          </>
-        )}
-
-        {!loading && !reportReady && <p className={styles.status}>{t('noData')}</p>}
-
-        {!loading && reportReady && (
-          <div className={styles.preview}>
-            <table>
-              <thead>
-                <tr>
-                  {reportType === 'budgets' ? (
+                )}
+            </tr>
+            </thead>
+            <tbody>
+            {inReportRows.map((row, index) => (
+                <tr key={`${index}-${row.category || row.date}`}>
+                {reportType === 'budgets' ? (
                     <>
-                      <th>{t('colCategory')}</th>
-                      <th>{t('colPeriod')}</th>
-                      <th>{t('colBudget')}</th>
-                      <th>{t('colSpent')}</th>
-                      <th>{t('colProgress')}</th>
+                    <td>{row.category}</td>
+                    <td>{row.period}</td>
+                    <td>{new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(row.amount)}</td>
+                    <td>{new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(row.spent)}</td>
+                    <td>{row.progress}</td>
                     </>
-                  ) : (
+                ) : (
                     <>
-                      <th>{t('colDate')}</th>
-                      <th>{t('colType')}</th>
-                      <th>{t('colCategory')}</th>
-                      <th>{t('colDescription')}</th>
-                      <th>{t('colAmount')}</th>
+                    <td>{row.date}</td>
+                    <td>{row.type}</td>
+                    <td>{row.category}</td>
+                    <td>{row.description}</td>
+                    <td>{new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(row.amount)}</td>
                     </>
-                  )}
+                )}
                 </tr>
-              </thead>
-              <tbody>
-                {inReportRows.map((row, index) => (
-                  <tr key={`${index}-${row.category || row.date}`}>
-                    {reportType === 'budgets' ? (
-                      <>
-                        <td>{row.category}</td>
-                        <td>{row.period}</td>
-                        <td>{new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(row.amount)}</td>
-                        <td>{new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(row.spent)}</td>
-                        <td>{row.progress}</td>
-                      </>
-                    ) : (
-                      <>
-                        <td>{row.date}</td>
-                        <td>{row.type}</td>
-                        <td>{row.category}</td>
-                        <td>{row.description}</td>
-                        <td>{new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: 'COP' }).format(row.amount)}</td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </DashboardLayout>
+            ))}
+            </tbody>
+        </table>
+        </div>
+    )}
+    </div>
   )
 }

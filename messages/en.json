@@ -150,7 +150,10 @@
     "newExpense": "New expense",
     "recurring": "Recurring",
     "categories": "Categories",
-    "insights": "Insights"
+    "insights": "Insights",
+    "alerts": "Alerts",
+    "goals": "Goals",
+    "gmailSync": "Gmail sync"
   },
   "Reports": {
     "title": "Financial reports",

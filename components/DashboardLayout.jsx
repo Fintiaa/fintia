@@ -42,21 +42,19 @@ export default function DashboardLayout({ children }) {
   const isPremium = profile?.subscription_tier === 'premium';
 
   const navItems = [
-    { icon: LayoutDashboard, label: t('dashboard'),    path: '/dashboard' },
-    { icon: Wallet,          label: t('transactions'), path: '/dashboard/transactions' },
-    { icon: RefreshCw,       label: t('recurring'),    path: '/dashboard/recurring' },
-    { icon: PieChart,        label: t('budgets'),      path: '/dashboard/budgets' },
-    { icon: TrendingUp,      label: t('categories'),   path: '/dashboard/categories' },
+    { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard' },
+    { icon: Wallet, label: t('transactions'), path: '/dashboard/transactions' },
+    { icon: RefreshCw, label: t('recurring'), path: '/dashboard/recurring' },
+    { icon: PieChart, label: t('budgets'), path: '/dashboard/budgets' },
+    { icon: TrendingUp, label: t('categories'), path: '/dashboard/categories' },
   ];
 
   const premiumNavItems = [
-    { icon: PieChart,      label: t('budgets'),              path: '/dashboard/budgets' },
-    { icon: TrendingUp,   label: t('reports'),        path: '/dashboard/reports' },
-    { icon: AlertTriangle, label: 'Alertas inteligentes',    path: '/dashboard/alerts' },
-    { icon: TrendingUp,    label: t('reports'),              path: '/dashboard/reports' },
-    { icon: Target,        label: 'Objetivos de ahorro',     path: '/dashboard/goals' },
-    { icon: Mail,          label: 'Sincronizar Gmail',       path: '/dashboard/sync' },
-    { icon: PieChart,      label: t('insights'),       path: '/dashboard/insights' },
+    { icon: AlertTriangle, label: t('alerts'), path: '/dashboard/alerts' },
+    { icon: TrendingUp, label: t('reports'), path: '/dashboard/reports' },
+    { icon: Target, label: t('goals'), path: '/dashboard/goals' },
+    { icon: Mail, label: t('gmailSync'), path: '/dashboard/sync' },
+    { icon: PieChart, label: t('insights'), path: '/dashboard/insights' },
   ];
 
   useEffect(() => {
