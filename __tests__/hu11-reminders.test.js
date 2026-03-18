@@ -2,10 +2,10 @@ import { checkInactivity } from "../lib/reminders"
 
 describe("HU11 - Recordatorios de registro", () => {
 
-  test("Detecta inactividad mayor a 1 día", () => {
+  test("Detecta inactividad mayor a 3 días", () => {
 
     const date = new Date()
-    date.setDate(date.getDate() - 2)
+    date.setDate(date.getDate() - 4)
 
     const result = checkInactivity(date)
 

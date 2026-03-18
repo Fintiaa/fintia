@@ -21,6 +21,7 @@ import {
   Lock,
   Crown,
   Target,
+  GitCompare,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -50,11 +51,12 @@ export default function DashboardLayout({ children }) {
   ];
 
   const premiumNavItems = [
-    { icon: AlertTriangle, label: t('alerts'), path: '/dashboard/alerts' },
-    { icon: TrendingUp, label: t('reports'), path: '/dashboard/reports' },
-    { icon: Target, label: t('goals'), path: '/dashboard/goals' },
-    { icon: Mail, label: t('gmailSync'), path: '/dashboard/sync' },
-    { icon: PieChart, label: t('insights'), path: '/dashboard/insights' },
+    { icon: AlertTriangle, label: t('alerts'),    path: '/dashboard/alerts' },
+    { icon: TrendingUp,    label: t('reports'),   path: '/dashboard/reports' },
+    { icon: GitCompare,    label: t('comparar'),  path: '/dashboard/comparar' },
+    { icon: Target,        label: t('goals'),     path: '/dashboard/goals' },
+    { icon: PieChart,      label: t('insights'),  path: '/dashboard/insights' },
+    { icon: Mail,          label: t('gmailSync'), path: '/dashboard/sync' },
   ];
 
   useEffect(() => {

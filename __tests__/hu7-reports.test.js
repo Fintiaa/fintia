@@ -8,7 +8,7 @@ import {
   formatDateISO,
   escapeCsvField,
   computeTotals,
-} from '@/app/[locale]/dashboard/reports/page'
+} from '@/lib/utils/reportUtils'
 
 describe('HU-7: utils de reportes', () => {
   test('formatDateISO formatea fecha en YYYY-MM-DD', () => {

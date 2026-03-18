@@ -121,8 +121,8 @@ export default function ReportsPage() {
         const history = await getMonthlyHistory(6)
         setHistoryData(history || [])
       }
-    } catch (err) {
-      console.error(err)
+    } catch (e) {
+      console.error(e)
       setError(t('errorLoad'))
     } finally {
       setLoading(false)

@@ -3,7 +3,7 @@
  * Pruebas unitarias para generador de insights
  */
 
-import { buildInsights } from '@/lib/hooks/useInsights'
+import { buildInsights } from '@/lib/utils/insights'
 
 describe('HU-9: buildInsights', () => {
   test('genera insights para balance positivo y categoría top', () => {

@@ -153,7 +153,8 @@
     "insights": "Insights",
     "alerts": "Alertas",
     "goals": "Metas",
-    "gmailSync": "Sincronizar Gmail"
+    "gmailSync": "Sincronizar Gmail",
+    "comparar": "Comparar períodos"
   },
   "Reports": {
     "title": "Reportes financieros",
@@ -232,7 +233,7 @@
     "noInsights": "No hay suficientes datos para generar insights aún.",
     "totalIncome": "Ingresos totales:",
     "totalExpenses": "Gastos totales:",
-    "balance": "Balance:" 
+    "balance": "Balance:"
   },
   "Header": {
     "features": "Funciones",
