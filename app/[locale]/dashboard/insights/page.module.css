@@ -1,0 +1,119 @@
+.page {
+  padding: 1.25rem;
+  min-height: 80vh;
+  font-size: 0.92rem;
+  color: #111827;
+}
+
+.page h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.45rem;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #111827;
+}
+
+.page p {
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+
+.header {
+  margin-bottom: 1.25rem;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 0.95rem 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cardLabel {
+  font-size: 0.82rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.cardValue {
+  font-size: 1.1rem;
+  color: #111827;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.insightsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+.insightItem {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  padding: 1rem;
+}
+
+.insightItem h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.insightItem p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.status {
+  margin-bottom: 1rem !important;
+  font-size: 0.86rem !important;
+  color: #6b7280 !important;
+}
+
+.empty {
+  margin-bottom: 1rem !important;
+  font-size: 0.88rem !important;
+  color: #6b7280 !important;
+}
+
+.error {
+  margin-bottom: 1rem !important;
+  font-size: 0.86rem !important;
+  color: #b91c1c !important;
+}
+
+@media (min-width: 640px) {
+  .page {
+    padding: 1.5rem;
+  }
+
+  .page h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .insightsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

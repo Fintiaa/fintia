@@ -1,0 +1,170 @@
+.page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.header p {
+  margin: 0.25rem 0 0;
+  color: var(--gray-600);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.controlGroup label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.controlGroup input,
+.controlGroup select {
+  height: 42px;
+  padding: 0 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.generateBtn,
+.exportBtn,
+.upgradeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.generateBtn:hover,
+.exportBtn:hover,
+.upgradeBtn:hover {
+  background: #5a8c6f;
+}
+
+.exportBtn:disabled,
+.generateBtn:disabled,
+.upgradeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.chartCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.chartCard h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.preview {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.preview table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preview th,
+.preview td {
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.preview th {
+  background: #f8fafc;
+  color: #111827;
+}
+
+.premiumGate {
+  text-align: center;
+  padding: 48px 24px;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  background: #fff;
+  margin: 36px;
+}
+
+.premiumIcon {
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.status,
+.error,
+.notification {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.status {
+  color: #334155;
+  background: #f8fafc;
+}
+
+.error {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.notification {
+  color: #164e63;
+  background: #e0f2fe;
+  margin-bottom: 12px;
+}
+
+.notification.error {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.notification.success {
+  color: #065f46;
+  background: #d1fae5;
+}

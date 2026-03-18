@@ -44,12 +44,14 @@ export default function DashboardLayout({ children }) {
     { icon: Wallet,          label: t('transactions'), path: '/dashboard/transactions' },
     { icon: RefreshCw,       label: t('recurring'),    path: '/dashboard/recurring' },
     { icon: PieChart,        label: t('budgets'),      path: '/dashboard/budgets' },
-    { icon: TrendingUp,      label: t('reports'),      path: '/dashboard/reports' },
+    { icon: TrendingUp,      label: t('categories'),   path: '/dashboard/categories' },
   ];
 
   const premiumNavItems = [
+    { icon: TrendingUp,   label: t('reports'),        path: '/dashboard/reports' },
     { icon: AlertTriangle, label: 'Alertas inteligentes', path: '/dashboard/alerts' },
     { icon: Mail,          label: 'Sincronizar Gmail',    path: '/dashboard/sync' },
+    { icon: PieChart,      label: t('insights'),       path: '/dashboard/insights' },
   ];
 
   useEffect(() => {
