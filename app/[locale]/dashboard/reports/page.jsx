@@ -12,15 +12,15 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import styles from './page.module.css'
 
-const formatDateISO = (date) => date.toISOString().split('T')[0]
+export const formatDateISO = (date) => date.toISOString().split('T')[0]
 
-const datePrefix = (amountDays = 0) => {
+export const datePrefix = (amountDays = 0) => {
   const d = new Date()
   d.setDate(d.getDate() - amountDays)
   return formatDateISO(d)
 }
 
-const escapeCsvField = (value) => {
+export const escapeCsvField = (value) => {
   if (value === null || value === undefined) return ''
   const str = String(value)
   return `"${str.replace(/"/g, '""')}"`
@@ -53,6 +53,19 @@ const downloadBlob = (blob, filename) => {
   URL.revokeObjectURL(url)
 }
 
+export const computeTotals = (reportType, budgets = [], transactions = []) => {
+  if (reportType === 'budgets') {
+    const totalBudget = budgets.reduce((acc, b) => acc + Number(b.amount || 0), 0)
+    const totalSpent = budgets.reduce((acc, b) => acc + Number(b.spent || 0), 0)
+    return { totalBudget, totalSpent, totalProgress: totalBudget === 0 ? 0 : (totalSpent / totalBudget) * 100 }
+  }
+
+  const totalAmount = transactions.reduce((acc, tx) => acc + Number(tx.amount || 0), 0)
+  const income = transactions.filter((tx) => tx.type === 'income').reduce((acc, tx) => acc + Number(tx.amount || 0), 0)
+  const expenses = transactions.filter((tx) => tx.type === 'expense').reduce((acc, tx) => acc + Number(tx.amount || 0), 0)
+  return { totalAmount, income, expenses }
+}
+
 export default function ReportsPage() {
   const t = useTranslations('Reports')
   const locale = useLocale()
@@ -72,17 +85,7 @@ export default function ReportsPage() {
 
   const reportReady = isPremium && !loading && (reportType === 'budgets' ? budgets.length > 0 : transactions.length > 0)
   const rowCount = reportType === 'budgets' ? budgets.length : transactions.length
-  const totals = useMemo(() => {
-    if (reportType === 'budgets') {
-      const totalBudget = budgets.reduce((acc, b) => acc + Number(b.amount || 0), 0)
-      const totalSpent = budgets.reduce((acc, b) => acc + Number(b.spent || 0), 0)
-      return { totalBudget, totalSpent, totalProgress: totalBudget === 0 ? 0 : (totalSpent / totalBudget) * 100 }
-    }
-    const totalAmount = transactions.reduce((acc, tx) => acc + Number(tx.amount || 0), 0)
-    const income = transactions.filter((tx) => tx.type === 'income').reduce((acc, tx) => acc + Number(tx.amount || 0), 0)
-    const expenses = transactions.filter((tx) => tx.type === 'expense').reduce((acc, tx) => acc + Number(tx.amount || 0), 0)
-    return { totalAmount, income, expenses }
-  }, [reportType, budgets, transactions])
+  const totals = useMemo(() => computeTotals(reportType, budgets, transactions), [reportType, budgets, transactions])
 
   const fetchReport = async () => {
     if (!isPremium) return
