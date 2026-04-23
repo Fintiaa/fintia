@@ -14,7 +14,7 @@ import {
   SkipForward,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { createClient } from '@/lib/supabase/client'
+import { api } from '@/lib/api/client'
 import styles from './page.module.css'
 
 export default function SyncPage() {
@@ -53,22 +53,12 @@ export default function SyncPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statusRes, supabase] = await Promise.all([
-          fetch('/api/gmail/status'),
-          Promise.resolve(createClient()),
-        ])
-
-        const { connection: conn } = await statusRes.json()
+        const { connection: conn } = await api.get('/gmail/status')
         setConnection(conn)
 
         if (conn) {
-          const { data } = await supabase
-            .from('synced_emails')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(20)
-
-          setSyncedEmails(data || [])
+          const emails = await api.get('/gmail/synced-emails')
+          setSyncedEmails(emails || [])
         }
       } catch (err) {
         console.error('Error fetching sync data:', err)
@@ -86,24 +76,15 @@ export default function SyncPage() {
 
     const autoSync = async () => {
       try {
-        const res = await fetch('/api/gmail/sync', { method: 'POST' })
-        if (res.ok) {
-          const data = await res.json()
-          if (data.summary?.created > 0) {
-            setSyncResult(data.summary)
-            setMessage({
-              type: 'success',
-              text: `Auto-sync: ${data.summary.created} nuevas transacciones.`,
-            })
-            // Refresh synced emails list
-            const supabase = createClient()
-            const { data: emails } = await supabase
-              .from('synced_emails')
-              .select('*')
-              .order('created_at', { ascending: false })
-              .limit(20)
-            setSyncedEmails(emails || [])
-          }
+        const data = await api.post('/gmail/sync', {})
+        if (data.summary?.created > 0) {
+          setSyncResult(data.summary)
+          setMessage({
+            type: 'success',
+            text: `Auto-sync: ${data.summary.created} nuevas transacciones.`,
+          })
+          const emails = await api.get('/gmail/synced-emails')
+          setSyncedEmails(emails || [])
         }
       } catch {
         // Silent fail for auto-sync
@@ -117,14 +98,7 @@ export default function SyncPage() {
   const handleConnect = async () => {
     setConnecting(true)
     try {
-      const res = await fetch('/api/gmail/auth')
-      const data = await res.json()
-
-      if (!res.ok) {
-        setMessage({ type: 'error', text: data.error || 'Error al conectar' })
-        return
-      }
-
+      const data = await api.get('/gmail/auth')
       window.location.href = data.url
     } catch {
       setMessage({ type: 'error', text: 'Error al iniciar conexión con Gmail' })
@@ -137,12 +111,10 @@ export default function SyncPage() {
     if (!confirm('¿Deseas desconectar tu cuenta de Gmail?')) return
 
     try {
-      const res = await fetch('/api/gmail/disconnect', { method: 'POST' })
-      if (res.ok) {
-        setConnection(null)
-        setSyncedEmails([])
-        setMessage({ type: 'success', text: 'Gmail desconectado.' })
-      }
+      await api.delete('/gmail/disconnect')
+      setConnection(null)
+      setSyncedEmails([])
+      setMessage({ type: 'success', text: 'Gmail desconectado.' })
     } catch {
       setMessage({ type: 'error', text: 'Error al desconectar' })
     }
@@ -152,28 +124,13 @@ export default function SyncPage() {
     setSyncing(true)
     setSyncResult(null)
     try {
-      const res = await fetch(`/api/gmail/sync${full ? '?full=true' : ''}`, { method: 'POST' })
-      const data = await res.json()
-
-      if (!res.ok) {
-        setMessage({ type: 'error', text: data.error || 'Error al sincronizar' })
-        return
-      }
-
+      const data = await api.post(`/gmail/sync${full ? '?full=true' : ''}`, {})
       setSyncResult(data.summary)
       setMessage({
         type: 'success',
         text: `Sincronización completa: ${data.summary.created} transacciones creadas.`,
       })
-
-      // Refresh synced emails list
-      const supabase = createClient()
-      const { data: emails } = await supabase
-        .from('synced_emails')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20)
-
+      const emails = await api.get('/gmail/synced-emails')
       setSyncedEmails(emails || [])
 
       // Refresh connection status

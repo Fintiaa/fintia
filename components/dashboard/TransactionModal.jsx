@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { getCategoriesByType } from '@/lib/data/categories'
-import { createTransaction, updateTransaction } from '@/lib/supabase/transactions'
+import { api } from '@/lib/api/client'
 import { useTranslations } from 'next-intl'
 import CurrencyInput from './CurrencyInput'
 import styles from './TransactionModal.module.css'
@@ -17,8 +16,13 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
   const [categoryId, setCategoryId] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [allCategories, setAllCategories] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    api.get('/categories').then(setAllCategories).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!isOpen) return
@@ -60,9 +64,9 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
         date,
       }
       if (isEditing) {
-        await updateTransaction(transaction.id, payload)
+        await api.put(`/transactions/${transaction.id}`, payload)
       } else {
-        await createTransaction(payload)
+        await api.post('/transactions', payload)
       }
       onSuccess()
       onClose()
@@ -75,7 +79,7 @@ export default function TransactionModal({ isOpen, onClose, onSuccess, transacti
 
   if (!isOpen) return null
 
-  const categories = getCategoriesByType(type)
+  const categories = allCategories.filter(c => c.type === type)
 
   return (
     <div className={styles.overlay} onClick={onClose}>

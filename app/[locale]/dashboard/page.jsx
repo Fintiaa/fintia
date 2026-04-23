@@ -10,15 +10,12 @@ import MonthlyBarChart from '@/components/dashboard/MonthlyBarChart'
 import { getCategoryById } from '@/lib/data/categories'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useDashboardStats } from '@/lib/hooks/useDashboardStats'
-import { getAllBudgetsWithSpending } from '@/lib/supabase/budgets'
+import { api } from '@/lib/api/client'
 import { Target } from "lucide-react"
 import styles from './page.module.css'
 import { checkInactivity } from "@/lib/reminders"
 import ReminderBanner from "@/components/reminders/ReminderBanner"
 import { sendReminderNotification, requestNotificationPermission } from "@/lib/notification"
-import { createClient as createSupabaseClient } from '@/lib/supabase/client'
-
-const supabase = createSupabaseClient()
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
@@ -49,18 +46,6 @@ export default function DashboardPage() {
     setTimeout(() => setShowReminder(true), 0)
     sendReminderNotification()
 
-    // Send email reminder (once per session using sessionStorage)
-    const alreadySent = sessionStorage.getItem('reminderEmailSent')
-    if (!alreadySent && user) {
-      sessionStorage.setItem('reminderEmailSent', '1')
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) return
-        fetch('/api/reminders/notify', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        }).catch(() => {})
-      })
-    }
   }, [recent, user])
 
   const isPremium = profile?.subscription_tier === 'premium'
@@ -69,7 +54,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isPremium) return
     let cancelled = false
-    getAllBudgetsWithSpending()
+    api.get('/budgets/with-spending')
       .then((data) => { if (!cancelled) setBudgets(data) })
       .catch(() => {})
     return () => { cancelled = true }
@@ -78,9 +63,7 @@ export default function DashboardPage() {
   const handleTransactionSuccess = () => {
     fetchData()
     if (isPremium) {
-      getAllBudgetsWithSpending()
-        .then(setBudgets)
-        .catch(() => {})
+      api.get('/budgets/with-spending').then(setBudgets).catch(() => {})
       requestNotificationPermission()
     }
   }

@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   X,
 } from 'lucide-react'
-import { getAllBudgetsWithSpending, createBudget, updateBudget, deleteBudget } from '@/lib/supabase/budgets'
+import { api } from '@/lib/api/client'
 import { getCategoryById, getCategoriesByType } from '@/lib/data/categories'
 import styles from './page.module.css'
 
@@ -22,7 +22,7 @@ export default function BudgetsPage() {
 
   const fetchBudgets = async () => {
     try {
-      const data = await getAllBudgetsWithSpending()
+      const data = await api.get('/budgets/with-spending')
       setBudgets(data)
     } catch (err) {
       console.error('Error fetching budgets:', err)
@@ -37,7 +37,7 @@ export default function BudgetsPage() {
 
   const handleDelete = async (id) => {
     try {
-      await deleteBudget(id)
+      await api.delete(`/budgets/${id}`)
       setBudgets((prev) => prev.filter((b) => b.id !== id))
       setDeleteConfirm(null)
     } catch (err) {
@@ -246,9 +246,9 @@ function BudgetModal({ budget, usedCategoryIds, onClose, onSuccess }) {
 
     try {
       if (isEditing) {
-        await updateBudget(budget.id, { category_id: categoryId, amount: Number(amount), period })
+        await api.put(`/budgets/${budget.id}`, { category_id: categoryId, amount: Number(amount), period })
       } else {
-        await createBudget({ category_id: categoryId, amount: Number(amount), period })
+        await api.post('/budgets', { category_id: categoryId, amount: Number(amount), period })
       }
       onSuccess()
     } catch (err) {

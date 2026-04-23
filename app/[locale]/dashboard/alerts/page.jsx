@@ -7,7 +7,7 @@ import {
   XCircle,
   Check,
 } from 'lucide-react'
-import { getAlerts, markAlertAsRead, markAllAlertsAsRead } from '@/lib/supabase/alerts'
+import { api } from '@/lib/api/client'
 import { getCategoryById } from '@/lib/data/categories'
 import styles from './page.module.css'
 
@@ -18,7 +18,7 @@ export default function AlertsPage() {
 
   const fetchAlerts = async () => {
     try {
-      const data = await getAlerts()
+      const data = await api.get('/alerts')
       setAlerts(data)
     } catch (err) {
       console.error('Error fetching alerts:', err)
@@ -33,7 +33,7 @@ export default function AlertsPage() {
 
   const handleMarkRead = async (id) => {
     try {
-      await markAlertAsRead(id)
+      await api.patch(`/alerts/${id}/read`, {})
       setAlerts((prev) =>
         prev.map((a) => (a.id === id ? { ...a, is_read: true } : a))
       )
@@ -44,7 +44,7 @@ export default function AlertsPage() {
 
   const handleMarkAllRead = async () => {
     try {
-      await markAllAlertsAsRead()
+      await api.patch('/alerts/read-all', {})
       setAlerts((prev) => prev.map((a) => ({ ...a, is_read: true })))
     } catch (err) {
       console.error('Error marking all alerts as read:', err)

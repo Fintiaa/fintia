@@ -5,8 +5,7 @@ import { Download, FileText, FileSpreadsheet, Zap, ArrowRight } from 'lucide-rea
 import { useTranslations, useLocale } from 'next-intl'
 import DashboardLayout from '@/components/DashboardLayout'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { getTransactions, getCategoryExpenses, getMonthlyHistory } from '@/lib/supabase/transactions'
-import { getAllBudgetsWithSpending } from '@/lib/supabase/budgets'
+import { api } from '@/lib/api/client'
 import { getCategoryById } from '@/lib/data/categories'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -99,26 +98,24 @@ export default function ReportsPage() {
 
     try {
       if (reportType === 'budgets') {
-        const data = await getAllBudgetsWithSpending()
+        const data = await api.get('/budgets/with-spending')
         setBudgets(data || [])
         setTransactions([])
         setCategoryData({})
         setHistoryData([])
       } else {
-        const data = await getTransactions({
-          filters: {
-            type: reportType === 'income' ? 'income' : reportType === 'expenses' ? 'expense' : undefined,
-            from,
-            to,
-          },
+        const data = await api.get('/transactions', {
+          type: reportType === 'income' ? 'income' : reportType === 'expenses' ? 'expense' : undefined,
+          from,
+          to,
         })
         setTransactions(data || [])
         setBudgets([])
 
-        const categoryExpenses = await getCategoryExpenses(from, to)
+        const categoryExpenses = await api.get('/transactions/category-expenses', { from, to })
         setCategoryData(categoryExpenses || {})
 
-        const history = await getMonthlyHistory(6)
+        const history = await api.get('/transactions/monthly-history', { months: '6' })
         setHistoryData(history || [])
       }
     } catch (e) {

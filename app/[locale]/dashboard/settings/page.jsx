@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone, Bell, Copy, Check } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { updateProfile } from '@/lib/supabase/profile'
+import { api } from '@/lib/api/client'
 import ReminderToggle from '@/components/reminders/ReminderToggle'
 import styles from './page.module.css'
 
@@ -89,7 +89,7 @@ export default function SettingsPage() {
     if (!firstName.trim()) { setError('El nombre es obligatorio.'); return }
     setLoading(true); setError(''); setSaved(false)
     try {
-      await updateProfile(user.id, { full_name: fullName })
+      await api.put('/profile', { full_name: fullName })
       refreshProfile()
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -113,7 +113,7 @@ export default function SettingsPage() {
     }
     setWhatsappLoading(true); setError('')
     try {
-      await updateProfile(user.id, { whatsapp_number: cleaned || null })
+      await api.put('/profile', { whatsapp_number: cleaned || null })
       setWhatsappSaved(true)
       setTimeout(() => setWhatsappSaved(false), 3000)
     } catch (err) {
@@ -133,7 +133,7 @@ export default function SettingsPage() {
     if (planId === currentPlan) return
     setPlanLoading(true); setPlanSuccess(false)
     try {
-      await updateProfile(user.id, { subscription_tier: planId })
+      await api.put('/profile', { subscription_tier: planId })
       refreshProfile()
       setPlanSuccess(true)
       setTimeout(() => setPlanSuccess(false), 3000)

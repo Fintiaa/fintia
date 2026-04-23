@@ -27,7 +27,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslations } from 'next-intl';
-import { getUnreadAlertCount } from '@/lib/supabase/alerts';
+import { api } from '@/lib/api/client';
 import AIChatWidget from '@/components/dashboard/AIChatWidget';
 import styles from './DashboardLayout.module.css';
 
@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (!isPremium || !user) return
 
-    const refresh = () => getUnreadAlertCount().then(setUnreadAlerts).catch(() => {})
+    const refresh = () => api.get('/alerts/unread-count').then((d) => setUnreadAlerts(d.count)).catch(() => {})
 
     // Initial fetch
     refresh()

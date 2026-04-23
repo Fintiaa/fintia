@@ -2,7 +2,20 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { calculatePercentage, getMonthlyTotal } from '@/lib/reports'
+import { api } from '@/lib/api/client'
+
+function calculatePercentage(oldValue, newValue) {
+  if (oldValue === 0) return 100
+  return ((newValue - oldValue) / oldValue) * 100
+}
+
+async function getMonthlyTotal(year, month, type) {
+  const start = `${year}-${String(month).padStart(2, '0')}-01`
+  const lastDay = new Date(year, Number(month), 0).getDate()
+  const end = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+  const stats = await api.get('/transactions/stats', { from: start, to: end })
+  return type === 'income' ? stats.income : stats.expenses
+}
 import ComparisonChart from '@/components/reports/ComparisonChart'
 import ComparisonForm from '@/components/reports/ComparisonForm'
 import PercentageChange from '@/components/reports/PercentageChange'

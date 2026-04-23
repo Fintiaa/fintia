@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, X, Send, Mic, MicOff, ImagePlus, Check } from 'lucide-react'
-import { createTransaction } from '@/lib/supabase/transactions'
+import { api } from '@/lib/api/client'
 import { getCategoryById } from '@/lib/data/categories'
 import styles from './AIChatWidget.module.css'
 
@@ -88,24 +88,11 @@ export default function AIChatWidget({ onSuccess }) {
     })
 
     try {
-      const res = await fetch('/api/parse-transaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: text || undefined,
-          imageBase64: image?.base64 || undefined,
-          mimeType: image?.mimeType || undefined,
-        }),
+      const data = await api.post('/ai/parse-transaction', {
+        text: text || undefined,
+        imageBase64: image?.base64 || undefined,
+        mimeType: image?.mimeType || undefined,
       })
-
-      const rawText = await res.text()
-      console.log('API response status:', res.status, '| body:', rawText.slice(0, 300))
-      let data
-      try {
-        data = JSON.parse(rawText)
-      } catch {
-        throw new Error(`Respuesta no válida (${res.status}): ${rawText.slice(0, 100)}`)
-      }
 
       if (data.error) {
         addMsg({ role: 'assistant', type: 'text', content: '😕 Nuestro AI está teniendo problemas... estamos trabajando para corregirlo. ¡Intenta de nuevo en un momento!' })
@@ -122,7 +109,7 @@ export default function AIChatWidget({ onSuccess }) {
 
   const confirmTransaction = async (msgId, parsed) => {
     try {
-      await createTransaction({
+      await api.post('/transactions', {
         amount: parsed.amount,
         type: parsed.type,
         category_id: parsed.category_id,
