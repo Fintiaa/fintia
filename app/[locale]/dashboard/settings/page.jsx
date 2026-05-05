@@ -131,6 +131,17 @@ export default function SettingsPage() {
 
   const handleChangePlan = async (planId) => {
     if (planId === currentPlan) return
+    if (planId === 'premium') {
+      setPlanLoading(true)
+      try {
+        const { checkoutUrl } = await api.post('/payments/create-checkout', {})
+        window.location.href = checkoutUrl
+      } catch (err) {
+        setError(err.message || 'Error al iniciar el pago.')
+        setPlanLoading(false)
+      }
+      return
+    }
     setPlanLoading(true); setPlanSuccess(false)
     try {
       await api.put('/profile', { subscription_tier: planId })
