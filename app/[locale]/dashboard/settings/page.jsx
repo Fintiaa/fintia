@@ -26,7 +26,7 @@ const PLANS = [
   {
     id: 'premium',
     name: 'Premium',
-    price: '$9.99',
+    price: '$1.50',
     period: 'por mes',
     icon: Crown,
     color: 'planPremium',
