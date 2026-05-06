@@ -1,92 +1,80 @@
 'use client'
 
-import DashboardLayout from '@/components/DashboardLayout'
 import { useInsights } from '@/lib/hooks/useInsights'
-import { useTranslations, useLocale } from 'next-intl'
 import styles from './page.module.css'
 
+const TYPE_STYLES = {
+  good: { bg: '#f0fdf4', border: '#86efac', label: '#166534' },
+  bad: { bg: '#fef2f2', border: '#fca5a5', label: '#991b1b' },
+  warning: { bg: '#fefce8', border: '#fde047', label: '#854d0e' },
+  tip: { bg: '#eff6ff', border: '#93c5fd', label: '#1e40af' },
+}
+
+const fmt = (n) =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0))
+
 export default function InsightsPage() {
-  const t = useTranslations('Insights')
-  const locale = useLocale()
-
   const { insights, stats, loading, error } = useInsights()
-
-  const formatNumber = (value) =>
-    new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'es-CO').format(
-      Number(value || 0)
-    )
 
   return (
     <div className={styles.page}>
-    {/* 🔹 HEADER */}
-    <div className={styles.header}>
-        <h1>{t('title')}</h1>
-        <p>{t('subtitle')}</p>
-    </div>
+      <div className={styles.header}>
+        <h1>Insights financieros ✨</h1>
+        <p>Fintia analiza tus movimientos del mes y te da su opinión (con cariño).</p>
+      </div>
 
-    {/* 🔹 SUMMARY */}
-    <div className={styles.summaryGrid}>
+      <div className={styles.summaryGrid}>
         <div className={styles.card}>
-        <span className={styles.cardLabel}>
-            {t('totalIncome')}
-        </span>
-        <strong className={styles.cardValue}>
-            {formatNumber(stats?.income)}
-        </strong>
+          <span className={styles.cardLabel}>Ingresos del mes</span>
+          <strong className={styles.cardValue} style={{ color: '#16a34a' }}>{fmt(stats?.income)}</strong>
         </div>
-
         <div className={styles.card}>
-        <span className={styles.cardLabel}>
-            {t('totalExpenses')}
-        </span>
-        <strong className={styles.cardValue}>
-            {formatNumber(stats?.expenses)}
-        </strong>
+          <span className={styles.cardLabel}>Gastos del mes</span>
+          <strong className={styles.cardValue} style={{ color: '#dc2626' }}>{fmt(stats?.expenses)}</strong>
         </div>
-
         <div className={styles.card}>
-        <span className={styles.cardLabel}>
-            {t('balance')}
-        </span>
-        <strong className={styles.cardValue}>
-            {formatNumber(stats?.balance)}
-        </strong>
+          <span className={styles.cardLabel}>Balance</span>
+          <strong className={styles.cardValue} style={{ color: stats?.balance >= 0 ? '#16a34a' : '#dc2626' }}>
+            {fmt(stats?.balance)}
+          </strong>
         </div>
-    </div>
+      </div>
 
-    {/* 🔹 STATES */}
-    {loading && (
-        <p className={styles.status}>
-        {t('loading')}
-        </p>
-    )}
+      {loading && (
+        <div className={styles.loadingBox}>
+          <div className={styles.loadingDots}><span /><span /><span /></div>
+          <p>Fintia está analizando tus finanzas...</p>
+        </div>
+      )}
 
-    {error && (
-        <p className={styles.error}>
-        {error}
-        </p>
-    )}
+      {error && !loading && (
+        <p className={styles.error}>⚠️ {error}</p>
+      )}
 
-    {!loading && !error && insights.length === 0 && (
-        <p className={styles.empty}>
-        {t('noInsights')}
-        </p>
-    )}
+      {!loading && !error && insights.length === 0 && (
+        <p className={styles.empty}>Registra algunas transacciones este mes para recibir insights 🙌</p>
+      )}
 
-    {/* 🔹 INSIGHTS */}
-    {!loading && !error && insights.length > 0 && (
+      {!loading && !error && insights.length > 0 && (
         <div className={styles.insightsGrid}>
-        {insights.map((item, index) => (
-            <article
-            key={`${item.title}-${index}`}
-            className={styles.insightItem}
-            >
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            </article>
-        ))}
+          {insights.map((item, i) => {
+            const s = TYPE_STYLES[item.type] || TYPE_STYLES.tip
+            return (
+              <article
+                key={i}
+                className={styles.insightItem}
+                style={{ background: s.bg, borderColor: s.border }}
+              >
+                <div className={styles.insightHeader}>
+                  <span className={styles.insightIcon}>{item.icon}</span>
+                  <h3 style={{ color: s.label }}>{item.title}</h3>
+                </div>
+                <p>{item.detail}</p>
+              </article>
+            )
+          })}
         </div>
-    )}
+      )}
     </div>
   )
 }
