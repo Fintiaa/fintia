@@ -24,7 +24,9 @@ export default function SyncPage() {
   const [syncedEmails, setSyncedEmails] = useState([])
   const [syncing, setSyncing] = useState(false)
   const [connecting, setConnecting] = useState(false)
+  const [reparsing, setReparsing] = useState(false)
   const [syncResult, setSyncResult] = useState(null)
+  const [reparseResult, setReparseResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
 
@@ -117,6 +119,24 @@ export default function SyncPage() {
       setMessage({ type: 'success', text: 'Gmail desconectado.' })
     } catch {
       setMessage({ type: 'error', text: 'Error al desconectar' })
+    }
+  }
+
+  const handleReparse = async () => {
+    if (!confirm('Esto vuelve a procesar tus transacciones existentes con el último parser para mejorar las descripciones. Puede tardar varios minutos. ¿Continuar?')) return
+    setReparsing(true)
+    setReparseResult(null)
+    try {
+      const data = await api.post('/gmail/reparse', {})
+      setReparseResult(data.summary)
+      setMessage({
+        type: 'success',
+        text: `Re-procesamiento listo: ${data.summary.updated} transacciones actualizadas.`,
+      })
+    } catch {
+      setMessage({ type: 'error', text: 'Error durante el re-procesamiento' })
+    } finally {
+      setReparsing(false)
     }
   }
 
@@ -264,7 +284,17 @@ export default function SyncPage() {
                         style={{ background: 'var(--gray-600, #4b5563)' }}
                       >
                         <RefreshCw size={16} />
-                        Sync completo (90 días)
+                        Sync completo (1 año)
+                      </button>
+                      <button
+                        className={styles.syncBtn}
+                        onClick={handleReparse}
+                        disabled={reparsing || syncing}
+                        style={{ background: 'var(--gray-700, #374151)' }}
+                        title="Vuelve a procesar transacciones existentes con el último parser"
+                      >
+                        <RefreshCw size={16} className={reparsing ? styles.spinner : ''} />
+                        {reparsing ? 'Re-procesando...' : 'Re-procesar transacciones'}
                       </button>
                       <button className={styles.disconnectBtn} onClick={handleDisconnect}>
                         <Unlink size={16} />
@@ -272,6 +302,31 @@ export default function SyncPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Reparse Result */}
+                  {reparseResult && (
+                    <div className={styles.syncResult}>
+                      <h4>Resultado de re-procesamiento</h4>
+                      <div className={styles.syncStats}>
+                        <div className={styles.syncStat}>
+                          <span className={styles.syncStatValue}>{reparseResult.total}</span>
+                          <span className={styles.syncStatLabel}>Procesadas</span>
+                        </div>
+                        <div className={styles.syncStat}>
+                          <span className={`${styles.syncStatValue} ${styles.created}`}>{reparseResult.updated}</span>
+                          <span className={styles.syncStatLabel}>Actualizadas</span>
+                        </div>
+                        <div className={styles.syncStat}>
+                          <span className={styles.syncStatValue}>{reparseResult.unchanged}</span>
+                          <span className={styles.syncStatLabel}>Sin cambios</span>
+                        </div>
+                        <div className={styles.syncStat}>
+                          <span className={`${styles.syncStatValue} ${reparseResult.errors > 0 ? styles.errored : ''}`}>{reparseResult.errors}</span>
+                          <span className={styles.syncStatLabel}>Errores</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Sync Result */}
                   {syncResult && (
