@@ -12,6 +12,8 @@ import {
   Shield,
   XCircle,
   SkipForward,
+  Check,
+  X,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { api } from '@/lib/api/client'
@@ -22,6 +24,8 @@ export default function SyncPage() {
   const searchParams = useSearchParams()
   const [connection, setConnection] = useState(null)
   const [syncedEmails, setSyncedEmails] = useState([])
+  const [pending, setPending] = useState([])
+  const [actioningId, setActioningId] = useState(null)
   const [syncing, setSyncing] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [reparsing, setReparsing] = useState(false)
@@ -59,8 +63,12 @@ export default function SyncPage() {
         setConnection(conn)
 
         if (conn) {
-          const emails = await api.get('/gmail/synced-emails')
+          const [emails, pendingList] = await Promise.all([
+            api.get('/gmail/synced-emails'),
+            api.get('/gmail/pending'),
+          ])
           setSyncedEmails(emails || [])
+          setPending(pendingList || [])
         }
       } catch (err) {
         console.error('Error fetching sync data:', err)
@@ -79,14 +87,18 @@ export default function SyncPage() {
     const autoSync = async () => {
       try {
         const data = await api.post('/gmail/sync', {})
-        if (data.summary?.created > 0) {
+        if (data.summary?.pending > 0) {
           setSyncResult(data.summary)
           setMessage({
             type: 'success',
-            text: `Auto-sync: ${data.summary.created} nuevas transacciones.`,
+            text: `Auto-sync: ${data.summary.pending} transacciones pendientes de revisión.`,
           })
-          const emails = await api.get('/gmail/synced-emails')
+          const [emails, pendingList] = await Promise.all([
+            api.get('/gmail/synced-emails'),
+            api.get('/gmail/pending'),
+          ])
           setSyncedEmails(emails || [])
+          setPending(pendingList || [])
         }
       } catch {
         // Silent fail for auto-sync
@@ -148,19 +160,44 @@ export default function SyncPage() {
       setSyncResult(data.summary)
       setMessage({
         type: 'success',
-        text: `Sincronización completa: ${data.summary.created} transacciones creadas.`,
+        text: `${data.summary.pending ?? 0} transacciones pendientes de revisión.`,
       })
-      const emails = await api.get('/gmail/synced-emails')
+      const [emails, pendingList, { connection: conn }] = await Promise.all([
+        api.get('/gmail/synced-emails'),
+        api.get('/gmail/pending'),
+        api.get('/gmail/status'),
+      ])
       setSyncedEmails(emails || [])
-
-      // Refresh connection status
-      const statusRes = await fetch('/api/gmail/status')
-      const { connection: conn } = await statusRes.json()
+      setPending(pendingList || [])
       setConnection(conn)
     } catch {
       setMessage({ type: 'error', text: 'Error durante la sincronización' })
     } finally {
       setSyncing(false)
+    }
+  }
+
+  const handleApprove = async (id) => {
+    setActioningId(id)
+    try {
+      await api.post(`/gmail/pending/${id}/approve`, {})
+      setPending((prev) => prev.filter((p) => p.id !== id))
+    } catch {
+      setMessage({ type: 'error', text: 'Error al aprobar' })
+    } finally {
+      setActioningId(null)
+    }
+  }
+
+  const handleReject = async (id) => {
+    setActioningId(id)
+    try {
+      await api.post(`/gmail/pending/${id}/reject`, {})
+      setPending((prev) => prev.filter((p) => p.id !== id))
+    } catch {
+      setMessage({ type: 'error', text: 'Error al rechazar' })
+    } finally {
+      setActioningId(null)
     }
   }
 
@@ -338,8 +375,8 @@ export default function SyncPage() {
                           <span className={styles.syncStatLabel}>Correos procesados</span>
                         </div>
                         <div className={styles.syncStat}>
-                          <span className={`${styles.syncStatValue} ${styles.created}`}>{syncResult.created}</span>
-                          <span className={styles.syncStatLabel}>Transacciones creadas</span>
+                          <span className={`${styles.syncStatValue} ${styles.created}`}>{syncResult.pending ?? 0}</span>
+                          <span className={styles.syncStatLabel}>Pendientes de revisión</span>
                         </div>
                         <div className={styles.syncStat}>
                           <span className={styles.syncStatValue}>{syncResult.skipped}</span>
@@ -355,6 +392,84 @@ export default function SyncPage() {
                 </div>
               )}
             </div>
+
+            {/* Pending Transactions */}
+            {connection && pending.length > 0 && (
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <h2>Transacciones pendientes ({pending.length})</h2>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--gray-600, #4b5563)', margin: '0.25rem 0 0' }}>
+                    Confirma cuáles quieres registrar en tu historial.
+                  </p>
+                </div>
+                <div className={styles.emailsList}>
+                  {pending.map((p) => {
+                    const parsed = p.parsed_data || {}
+                    const isIncome = parsed.type === 'income'
+                    return (
+                      <div key={p.id} className={styles.emailItem}>
+                        <div className={styles.emailInfo}>
+                          <p className={styles.emailSubject}>
+                            {parsed.description || 'Sin descripción'}
+                          </p>
+                          <p className={styles.emailMeta}>
+                            {parsed.bank || 'Banco'} · {parsed.date || formatDate(p.received_at)}
+                            {parsed.category_id ? ` · ${parsed.category_id}` : ''}
+                          </p>
+                        </div>
+                        <div className={styles.emailStatusLabel} style={{ alignItems: 'center' }}>
+                          {parsed.amount && (
+                            <span className={styles.emailAmount} style={{
+                              color: isIncome ? 'var(--green-600, #16a34a)' : 'var(--red-600, #dc2626)',
+                              fontWeight: 600,
+                            }}>
+                              {isIncome ? '+' : '-'}
+                              ${Number(parsed.amount).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
+                            </span>
+                          )}
+                          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '0.75rem' }}>
+                            <button
+                              onClick={() => handleApprove(p.id)}
+                              disabled={actioningId === p.id}
+                              title="Aprobar"
+                              style={{
+                                background: 'var(--green-100, #dcfce7)',
+                                color: 'var(--green-700, #15803d)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '0.5rem',
+                                cursor: actioningId === p.id ? 'wait' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Check size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleReject(p.id)}
+                              disabled={actioningId === p.id}
+                              title="Rechazar"
+                              style={{
+                                background: 'var(--red-100, #fee2e2)',
+                                color: 'var(--red-700, #b91c1c)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '0.5rem',
+                                cursor: actioningId === p.id ? 'wait' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <X size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Synced Emails History */}
             {syncedEmails.length > 0 && (
