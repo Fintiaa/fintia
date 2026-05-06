@@ -175,7 +175,7 @@ export default function TransactionsPage() {
                 </thead>
                 <tbody>
                   {displayed.map((tx) => {
-                    const cat = getCategoryById(tx.category_id)
+                    const cat = tx.category || getCategoryById(tx.category_id)
                     return (
                       <tr key={tx.id}>
                         <td>
@@ -189,7 +189,7 @@ export default function TransactionsPage() {
                             >
                               {cat?.icon || '📦'}
                             </span>
-                            <span className={styles.catName}>{cat?.name || tx.category_id}</span>
+                            <span className={styles.catName}>{cat?.name || '—'}</span>
                           </div>
                         </td>
                         <td className={styles.descCell}>

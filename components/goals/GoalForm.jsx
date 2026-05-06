@@ -1,53 +1,51 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import styles from "./goals.module.css"
+import { useState } from 'react'
+import { Plus } from 'lucide-react'
+import styles from './goals.module.css'
 
-export default function GoalForm({onCreate}){
+export default function GoalForm({ onCreate }) {
+  const [name, setName] = useState('')
+  const [amount, setAmount] = useState('')
 
-  const [name,setName] = useState("")
-  const [amount,setAmount] = useState("")
-
-  const submit = (e)=>{
+  const submit = (e) => {
     e.preventDefault()
-
-    onCreate({
-      name,
-      target:Number(amount),
-      saved:0
-    })
-
-    setName("")
-    setAmount("")
+    if (!name.trim() || !Number(amount)) return
+    onCreate({ name: name.trim(), target: Number(amount), saved: 0 })
+    setName('')
+    setAmount('')
   }
 
-  return(
-
-    <form
-      className={styles.goalForm}
-      onSubmit={submit}
-    >
-
-      <input
-        className={styles.input}
-        placeholder="Nombre de la meta"
-        value={name}
-        onChange={(e)=>setName(e.target.value)}
-      />
-
-      <input
-        className={styles.input}
-        type="number"
-        placeholder="Monto objetivo"
-        value={amount}
-        onChange={(e)=>setAmount(e.target.value)}
-      />
-
-      <button className={styles.createBtn}>
-        Crear meta
-      </button>
-
-    </form>
-
+  return (
+    <div className={styles.formCard}>
+      <p className={styles.formTitle}>Nueva meta de ahorro</p>
+      <form onSubmit={submit}>
+        <div className={styles.formRow}>
+          <div className={styles.field}>
+            <label>Nombre</label>
+            <input
+              placeholder="Ej: Viaje a Cartagena"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className={styles.field}>
+            <label>Monto objetivo (COP)</label>
+            <input
+              type="number"
+              placeholder="Ej: 500000"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              min="1"
+              required
+            />
+          </div>
+          <button type="submit" className={styles.createBtn}>
+            <Plus size={16} /> Crear
+          </button>
+        </div>
+      </form>
+    </div>
   )
 }
