@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone, Bell, Copy, Check } from 'lucide-react'
+import { User, Mail, Save, CheckCircle, Zap, Star, Crown, MessageCircle, Phone, Bell, Copy, Check, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { api } from '@/lib/api/client'
 import ReminderToggle from '@/components/reminders/ReminderToggle'
@@ -62,6 +62,10 @@ export default function SettingsPage() {
 
   const currentPlan = profile?.subscription_tier || 'free'
   const isPremium = currentPlan === 'premium'
+  const isCancelled = isPremium && !!profile?.subscription_expires_at
+  const expiresAt = profile?.subscription_expires_at
+    ? new Date(profile.subscription_expires_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
 
   useEffect(() => {
     if (profile?.full_name) {
@@ -266,9 +270,9 @@ export default function SettingsPage() {
                   <button
                     className={`${styles.planBtn} ${isActive ? styles.planBtnActive : plan.id === 'premium' ? styles.planBtnPremium : styles.planBtnFree}`}
                     onClick={() => handleChangePlan(plan.id)}
-                    disabled={isActive || planLoading}
+                    disabled={isActive || planLoading || (plan.id === 'free' && isPremium)}
                   >
-                    {isActive ? 'Plan actual' : planLoading ? 'Cambiando...' : `Cambiar a ${plan.name}`}
+                    {isActive ? 'Plan actual' : planLoading ? 'Procesando...' : plan.id === 'free' && isPremium ? 'Plan actual' : `Cambiar a ${plan.name}`}
                   </button>
                 </div>
               )
@@ -276,15 +280,25 @@ export default function SettingsPage() {
           </div>
 
           {isPremium && (
-            <p className={styles.planNote}>
-              <button
-                onClick={handleCancelSubscription}
-                disabled={planLoading}
-                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-              >
-                Cancelar suscripción
-              </button>
-            </p>
+            <div className={styles.cancelZone}>
+              {isCancelled ? (
+                <div className={styles.cancelledNotice}>
+                  <AlertCircle size={16} />
+                  <span>Tu suscripción está cancelada. Mantienes acceso Premium hasta el <strong>{expiresAt}</strong>.</span>
+                </div>
+              ) : (
+                <>
+                  <p className={styles.cancelHint}>¿Quieres cancelar? Tu acceso Premium se mantendrá hasta el final del período actual (30 días).</p>
+                  <button
+                    className={styles.cancelBtn}
+                    onClick={handleCancelSubscription}
+                    disabled={planLoading}
+                  >
+                    {planLoading ? 'Cancelando...' : 'Cancelar suscripción'}
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
 
