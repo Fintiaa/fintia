@@ -129,6 +129,21 @@ export default function SettingsPage() {
     setTimeout(() => setJoinCopied(false), 2000)
   }
 
+  const handleCancelSubscription = async () => {
+    if (!window.confirm('¿Estás segura de que quieres cancelar tu suscripción Premium?')) return
+    setPlanLoading(true)
+    try {
+      await api.post('/payments/cancel', {})
+      refreshProfile()
+      setPlanSuccess(true)
+      setTimeout(() => setPlanSuccess(false), 3000)
+    } catch (err) {
+      setError(err.message || 'Error al cancelar la suscripción.')
+    } finally {
+      setPlanLoading(false)
+    }
+  }
+
   const handleChangePlan = async (planId) => {
     if (planId === currentPlan) return
     if (planId === 'premium') {
@@ -260,9 +275,17 @@ export default function SettingsPage() {
             })}
           </div>
 
-          <p className={styles.planNote}>
-            * Los pagos no están habilitados aún. Puedes cambiar de plan libremente durante el desarrollo.
-          </p>
+          {isPremium && (
+            <p className={styles.planNote}>
+              <button
+                onClick={handleCancelSubscription}
+                disabled={planLoading}
+                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+              >
+                Cancelar suscripción
+              </button>
+            </p>
+          )}
         </div>
 
         {/* Recordatorios */}
