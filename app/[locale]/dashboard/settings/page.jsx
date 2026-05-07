@@ -71,9 +71,16 @@ export default function SettingsPage() {
   useEffect(() => {
     if (profile?.full_name) {
       const parts = profile.full_name.trim().split(' ')
-      setFirstName(parts[0] || '')
-      setSecondName(parts[1] || '')
-      setLastName(parts.slice(2).join(' ') || '')
+      if (parts.length === 1) {
+        setFirstName(parts[0])
+      } else if (parts.length === 2) {
+        setFirstName(parts[0])
+        setLastName(parts[1])
+      } else {
+        setFirstName(parts[0])
+        setSecondName(parts[1])
+        setLastName(parts.slice(2).join(' '))
+      }
     }
     if (profile?.whatsapp_number) {
       setWhatsapp(profile.whatsapp_number)
