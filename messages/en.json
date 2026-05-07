@@ -14,10 +14,10 @@
     "errorDefault": "Error signing in. Check your credentials.",
     "visual": {
       "title": "Control your money without the hassle",
-      "description": "Join thousands of people already simplifying their personal finances with Fintia.",
+      "description": "Control your income and expenses, set budgets and get AI insights — all for free.",
       "feature1": "Simple expense tracking",
-      "feature2": "Clear visualization",
-      "feature3": "Smart alerts"
+      "feature2": "Clear charts and dashboards",
+      "feature3": "AI-powered insights"
     }
   },
   "Signup": {
@@ -40,6 +40,7 @@
     "errorPasswordMatch": "Passwords don't match",
     "errorPasswordLength": "Password must be at least 6 characters",
     "errorDefault": "Error creating account. Please try again.",
+    "emailConfirmNotice": "After creating your account you'll receive a confirmation email. You must confirm your email before you can log in.",
     "success": {
       "title": "Account created!",
       "description": "We've sent a confirmation link to {email}. Please check your inbox and confirm your email to activate your account.",
@@ -245,26 +246,26 @@
     "getStarted": "Get started free"
   },
   "Hero": {
-    "badge": "New: Bank sync now available",
+    "badge": "New: WhatsApp assistant now available",
     "headline": "Control your money",
     "headlineGradient": "without the hassle",
-    "subheadline": "Fintia helps you record, visualize and automate your personal finances in one place. Simple, visual and designed for you.",
+    "subheadline": "Fintia helps you record, visualize and understand your personal finances in one place. Simple, visual and made for Colombians.",
     "goToDashboard": "Go to Dashboard",
     "getStarted": "Get started free",
     "viewPremium": "View Premium",
-    "activeUsers": "Active users",
-    "rating": "Rating",
-    "managed": "Managed",
+    "activeUsers": "100% free to start",
+    "rating": "No credit card needed",
+    "managed": "Cancel anytime",
     "mockup": {
       "totalBalance": "Total Balance",
       "expenses": "Expenses",
-      "thisMonth": "+8.2% this month",
-      "vsPastMonth": "-12% vs last month",
+      "thisMonth": "This month",
+      "vsPastMonth": "vs last month",
       "byCategory": "Expenses by category",
       "food": "Food",
       "transport": "Transport",
       "services": "Services",
-      "leisure": "Leisure",
+      "leisure": "Entertainment",
       "latestTransactions": "Latest transactions",
       "supermarket": "Supermarket",
       "todayTime": "Today, 14:30",
@@ -272,7 +273,7 @@
       "yesterday": "Yesterday",
       "alertTitle": "Budget alert",
       "alertText": "80% spent on Food",
-      "synced": "Synced"
+      "synced": "Gmail synced"
     }
   },
   "Problem": {
@@ -295,8 +296,8 @@
     "f1desc": "Clean interface without overwhelming options. Just what you need.",
     "f2title": "Visual",
     "f2desc": "Clear charts that show your financial situation at a glance.",
-    "f3title": "Automated",
-    "f3desc": "Sync your accounts and forget about tedious manual tracking.",
+    "f3title": "Intelligent",
+    "f3desc": "AI assistant via WhatsApp, voice notes and photos to record expenses without opening the app.",
     "f4title": "For you",
     "f4desc": "Designed for real people, not expert accountants.",
     "mockup": {
@@ -323,27 +324,27 @@
     "f2desc": "Review your expense history organized by date and category.",
     "f3title": "Simple dashboards",
     "f3desc": "Visualize your finances with clear, easy-to-understand charts.",
-    "p1title": "Bank sync",
-    "p1desc": "Connect your accounts and cards to import transactions automatically.",
-    "p2title": "Category budgets",
-    "p2desc": "Set spending limits for each category and monitor your progress.",
-    "p3title": "Smart alerts",
-    "p3desc": "Get notified when you're approaching your budget limits.",
-    "p4title": "Financial insights",
-    "p4desc": "Get advanced analytics and personalized recommendations to save more."
+    "p1title": "Gmail sync",
+    "p1desc": "Connect your Gmail to automatically detect purchases and payments from bank emails.",
+    "p2title": "WhatsApp & voice AI",
+    "p2desc": "Send a voice note or photo to the Fintia WhatsApp bot and it records the expense for you.",
+    "p3title": "Budgets + smart alerts",
+    "p3desc": "Set spending limits per category and get real-time alerts before exceeding them.",
+    "p4title": "Reports & insights",
+    "p4desc": "Export to PDF/Excel and receive AI-generated recommendations to improve your finances."
   },
   "HowItWorks": {
     "label": "How it works",
     "title": "Get started in 3 simple steps",
     "description": "You don't need to be a finance expert. Fintia does the heavy lifting for you.",
     "s1title": "Sign up for free",
-    "s1desc": "Create your account in seconds. No credit card, no commitments. Just your email and a password.",
+    "s1desc": "Create your account in seconds. No credit card required. Just your email and a password — you'll need to confirm your email before logging in.",
     "s2title": "Track or sync",
-    "s2desc": "Add your expenses manually or connect your bank accounts to import transactions automatically.",
+    "s2desc": "Add expenses manually, or connect Gmail, send a WhatsApp voice note, or upload a photo to let AI do it for you.",
     "s3title": "Get in control",
     "s3desc": "Visualize your finances, get budget alerts and make informed decisions about your money.",
     "ctaTitle": "Ready to get started?",
-    "ctaDesc": "Join thousands of users already controlling their finances with Fintia.",
+    "ctaDesc": "Start for free and upgrade to Premium when you're ready.",
     "ctaBtn": "Create free account"
   },
   "Pricing": {
@@ -356,33 +357,33 @@
       "period": "forever",
       "description": "All the basics to start organizing your finances.",
       "f1": "Unlimited manual tracking",
-      "f2": "Transaction view",
-      "f3": "Basic dashboards",
-      "f4": "Expense categorization",
+      "f2": "Transaction history with filters",
+      "f3": "Basic dashboard with charts",
+      "f4": "Custom categories",
       "f5": "Export to CSV",
       "cta": "Get started free"
     },
     "premium": {
       "name": "Premium",
       "period": "/month",
-      "description": "Full automation and control to optimize your money.",
+      "description": "AI automation and advanced control of your finances.",
       "f1": "Everything in Free",
-      "f2": "Bank sync",
-      "f3": "Category budgets",
-      "f4": "Smart alerts",
-      "f5": "Financial insights",
-      "f6": "Priority support",
-      "f7": "No ads",
-      "cta": "Try 14 days free"
+      "f2": "Gmail sync (auto-detect transactions)",
+      "f3": "WhatsApp + voice + photo AI",
+      "f4": "Budgets per category + smart alerts",
+      "f5": "AI financial insights",
+      "f6": "Export to PDF and Excel",
+      "f7": "Savings goals tracking",
+      "cta": "Activate Premium"
     },
-    "guarantee": "Satisfaction guarantee",
-    "guaranteeDesc": "If you're not happy with Premium, we'll refund you within the first 30 days. No questions asked."
+    "guarantee": "Cancel anytime",
+    "guaranteeDesc": "No lock-in. Cancel whenever you want and keep Premium until the end of your billing period."
   },
   "CTA": {
     "title": "Start taking control of your money today",
-    "description": "Join thousands of people already simplifying their personal finances. No complications, no commitments.",
+    "description": "No credit card. No commitments. Confirm your email and you're in.",
     "btn": "Create free account",
-    "note": "Setup in less than 2 minutes",
+    "note": "You'll receive a confirmation email",
     "b1": "No credit card",
     "b2": "Cancel anytime",
     "b3": "Support included"

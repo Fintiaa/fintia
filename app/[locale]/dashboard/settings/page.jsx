@@ -47,6 +47,7 @@ export default function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth()
 
   const [firstName, setFirstName] = useState('')
+  const [secondName, setSecondName] = useState('')
   const [lastName, setLastName] = useState('')
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -71,17 +72,19 @@ export default function SettingsPage() {
     if (profile?.full_name) {
       const parts = profile.full_name.trim().split(' ')
       setFirstName(parts[0] || '')
-      setLastName(parts.slice(1).join(' ') || '')
+      setSecondName(parts[1] || '')
+      setLastName(parts.slice(2).join(' ') || '')
     }
     if (profile?.whatsapp_number) {
       setWhatsapp(profile.whatsapp_number)
     }
   }, [profile])
 
-  const fullName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ')
+  const fullName = [firstName.trim(), secondName.trim(), lastName.trim()].filter(Boolean).join(' ')
 
   const getInitials = () => {
     if (firstName.trim() && lastName.trim()) return (firstName[0] + lastName[0]).toUpperCase()
+    if (firstName.trim() && secondName.trim()) return (firstName[0] + secondName[0]).toUpperCase()
     if (firstName.trim()) return firstName[0].toUpperCase()
     return user?.email?.charAt(0).toUpperCase() || 'U'
   }
@@ -200,14 +203,25 @@ export default function SettingsPage() {
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.row}>
               <div className={styles.field}>
-                <label htmlFor="first-name">Nombre *</label>
+                <label htmlFor="first-name">Primer nombre *</label>
                 <div className={styles.inputWrapper}>
                   <User size={18} className={styles.inputIcon} />
                   <input id="first-name" type="text" value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Tu nombre" maxLength={40} required />
+                    placeholder="Tu primer nombre" maxLength={40} required />
                 </div>
               </div>
+              <div className={styles.field}>
+                <label htmlFor="second-name">Segundo nombre</label>
+                <div className={styles.inputWrapper}>
+                  <User size={18} className={styles.inputIcon} />
+                  <input id="second-name" type="text" value={secondName}
+                    onChange={(e) => setSecondName(e.target.value)}
+                    placeholder="Opcional" maxLength={40} />
+                </div>
+              </div>
+            </div>
+            <div className={styles.row}>
               <div className={styles.field}>
                 <label htmlFor="last-name">Apellido</label>
                 <div className={styles.inputWrapper}>

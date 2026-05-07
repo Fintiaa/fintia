@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Link } from '@/i18n/navigation'
-import { Mail, Lock, ArrowRight, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, AlertCircle, Loader2, CheckCircle, Info } from 'lucide-react'
 import Image from 'next/image'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useTranslations } from 'next-intl'
@@ -139,6 +139,11 @@ export default function SignupPage() {
                 <a href="#">{t('termsLink')}</a> {t('and')}{' '}
                 <a href="#">{t('privacyLink')}</a>.
               </p>
+            </div>
+
+            <div className={styles.emailNotice}>
+              <Info size={16} />
+              <span>{t('emailConfirmNotice')}</span>
             </div>
 
             <button type="submit" className={styles.submitBtn} disabled={loading}>

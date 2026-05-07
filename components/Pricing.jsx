@@ -17,7 +17,7 @@ const Pricing = async () => {
     },
     {
       name: t('premium.name'),
-      price: '$9.99',
+      price: '$2.000 COP',
       period: t('premium.period'),
       description: t('premium.description'),
       features: [t('premium.f1'), t('premium.f2'), t('premium.f3'), t('premium.f4'), t('premium.f5'), t('premium.f6'), t('premium.f7')],

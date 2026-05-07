@@ -161,6 +161,25 @@
   text-decoration: underline;
 }
 
+.emailNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: #1d4ed8;
+  line-height: 1.4;
+}
+
+.emailNotice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #3b82f6;
+}
+
 .submitBtn {
   display: flex;
   align-items: center;

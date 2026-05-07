@@ -46,17 +46,17 @@ const Hero = () => {
 
           <div className={styles.trustIndicators}>
             <div className={styles.trustItem}>
-              <span className={styles.trustNumber}>10k+</span>
+              <span className={styles.trustNumber}>✓</span>
               <span className={styles.trustLabel}>{t('activeUsers')}</span>
             </div>
             <div className={styles.trustDivider}></div>
             <div className={styles.trustItem}>
-              <span className={styles.trustNumber}>4.9</span>
+              <span className={styles.trustNumber}>✓</span>
               <span className={styles.trustLabel}>{t('rating')}</span>
             </div>
             <div className={styles.trustDivider}></div>
             <div className={styles.trustItem}>
-              <span className={styles.trustNumber}>$2M+</span>
+              <span className={styles.trustNumber}>✓</span>
               <span className={styles.trustLabel}>{t('managed')}</span>
             </div>
           </div>
