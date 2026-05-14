@@ -5,7 +5,9 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 const fmt = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n)
 
-const OTROS_COLOR = '#d1d5db'
+// Palette of distinct colors for categories that lack one
+const FALLBACK_COLORS = ['#B9D8C2', '#9AC2C9', '#8AA1B1', '#FFCB47', '#7ab98d', '#4A5043', '#d4e8da', '#c8d8c0']
+const OTROS_COLOR = '#cbd5e1'
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null
@@ -41,17 +43,16 @@ const renderLegend = (props) => {
   )
 }
 
-// data can be either the old { id: amount } object or the new array [{ id, name, icon, color, value }]
 function normalizeData(data) {
   if (Array.isArray(data)) return data
-  // legacy object format — shouldn't happen after backend fix but keep as fallback
-  return Object.entries(data).map(([id, value]) => ({ id, name: id, icon: '📦', color: '#9ca3af', value }))
+  // legacy object format fallback
+  return Object.entries(data).map(([id, value]) => ({ id, name: id, icon: '📦', color: null, value }))
 }
 
 export default function ExpensesPieChart({ data, emptyText }) {
-  const items = normalizeData(data).filter((d) => d.value > 0)
+  const raw = normalizeData(data).filter((d) => d.value > 0)
 
-  if (items.length === 0) {
+  if (raw.length === 0) {
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -62,24 +63,39 @@ export default function ExpensesPieChart({ data, emptyText }) {
     )
   }
 
+  // Step 1: merge entries with the same name (e.g. multiple unresolved → "Otros")
+  const merged = new Map()
+  raw.forEach((item, i) => {
+    const key = item.name
+    if (merged.has(key)) {
+      merged.get(key).value += item.value
+    } else {
+      merged.set(key, {
+        ...item,
+        color: item.color || FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+      })
+    }
+  })
+
+  const items = [...merged.values()].sort((a, b) => b.value - a.value)
   const total = items.reduce((s, d) => s + d.value, 0)
 
-  // Group items < 4% of total into "Otros"
-  const THRESHOLD = 0.04
-  const main = []
-  let othersValue = 0
+  // Step 2: group items < 5% AND not the top 5 into one "Otros"
+  const top5 = items.slice(0, 5)
+  const rest = items.slice(5)
+  const smallFromTop = top5.filter((item) => item.value / total < 0.05 && item.name !== 'Otros')
+  const main = top5.filter((item) => item.value / total >= 0.05 || item.name === 'Otros')
 
-  for (const item of items.sort((a, b) => b.value - a.value)) {
-    if (item.value / total < THRESHOLD) {
-      othersValue += item.value
-    } else {
-      main.push(item)
-    }
-  }
+  let othersValue = rest.reduce((s, d) => s + d.value, 0)
+  othersValue += smallFromTop.reduce((s, d) => s + d.value, 0)
 
-  const chartData = [...main]
-  if (othersValue > 0) {
-    chartData.push({ id: '__otros__', name: 'Otros', icon: '📦', color: OTROS_COLOR, value: othersValue })
+  // If there's already an "Otros" entry in main, merge into it
+  const existingOtros = main.find((d) => d.name === 'Otros')
+  const chartData = main.filter((d) => d.name !== 'Otros')
+
+  const finalOtrosValue = (existingOtros?.value ?? 0) + othersValue
+  if (finalOtrosValue > 0) {
+    chartData.push({ id: '__otros__', name: 'Otros', color: OTROS_COLOR, value: finalOtrosValue })
   }
 
   return (
