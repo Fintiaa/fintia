@@ -366,7 +366,7 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 280px;
+  width: min(280px, calc(100vw - 32px));
   background: white;
   border: 1px solid var(--gray-100);
   border-radius: var(--radius-lg);
@@ -426,8 +426,14 @@
 /* Page Content */
 .pageContent {
   flex: 1;
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
+}
+
+@media (min-width: 480px) {
+  .pageContent {
+    padding: 20px;
+  }
 }
 
 @media (min-width: 768px) {

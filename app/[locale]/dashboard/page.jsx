@@ -218,7 +218,7 @@ export default function DashboardPage() {
             </div>
             <div className={styles.budgetsList}>
               {budgets.slice(0, 4).map((budget) => {
-                const cat = getCategoryById(budget.category_id)
+                const cat = budget.category || getCategoryById(budget.category_id)
                 const progressColor =
                   budget.percentage >= 100 ? 'var(--error)' :
                   budget.percentage >= 80 ? 'var(--warning)' : 'var(--success)'
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                   <div key={budget.id} className={styles.budgetItem}>
                     <div className={styles.budgetHeader}>
                       <span className={styles.budgetName}>
-                        {cat?.icon} {cat?.name || budget.category_id}
+                        {cat?.icon} {cat?.name || t('unknownCategory')}
                       </span>
                       <span className={styles.budgetAmount}>
                         {fmt(budget.spent)} {t('budgetOf')} {fmt(Number(budget.amount))}
@@ -285,7 +285,7 @@ export default function DashboardPage() {
           ) : (
             <div className={styles.transactionsList}>
               {recent.map((tx) => {
-                const cat = getCategoryById(tx.category_id)
+                const cat = tx.category || getCategoryById(tx.category_id)
                 return (
                   <div key={tx.id} className={styles.transactionItem}>
                     <div

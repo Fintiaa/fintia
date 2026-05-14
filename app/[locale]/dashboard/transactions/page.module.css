@@ -104,10 +104,17 @@
 }
 
 .filterRow {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   align-items: center;
+}
+
+@media (min-width: 640px) {
+  .filterRow {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 .filterSelect,
@@ -132,6 +139,7 @@
 .clearBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   padding: 8px 12px;
   background: none;
@@ -142,6 +150,13 @@
   cursor: pointer;
   transition: all 0.15s;
   font-family: inherit;
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 640px) {
+  .clearBtn {
+    grid-column: auto;
+  }
 }
 
 .clearBtn:hover {
@@ -156,13 +171,111 @@
   margin-bottom: 8px;
 }
 
+/* ── Mobile card list (< 640px) ── */
+.mobileList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .mobileList {
+    display: none;
+  }
+}
+
+.mobileCard {
+  background: white;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobileCardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileCardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileCardName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileCardMeta {
+  font-size: 0.78rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileCardAmount {
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mobileCardBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobileCardDesc {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileCardActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mobileDeleteConfirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  flex-wrap: wrap;
+}
+
 /* Table */
 .tableWrapper {
+  display: none;
   background: white;
   border: 1px solid var(--gray-100);
   border-radius: var(--radius-lg);
   overflow: hidden;
   overflow-x: auto;
+}
+
+@media (min-width: 640px) {
+  .tableWrapper {
+    display: block;
+  }
 }
 
 .table {

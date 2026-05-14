@@ -10,7 +10,8 @@ import {
   X,
 } from 'lucide-react'
 import { api } from '@/lib/api/client'
-import { getCategoryById, getCategoriesByType } from '@/lib/data/categories'
+import { getCategoryById } from '@/lib/data/categories'
+import { useCategories } from '@/lib/hooks/useCategories'
 import styles from './page.module.css'
 
 export default function BudgetsPage() {
@@ -111,7 +112,7 @@ export default function BudgetsPage() {
         ) : (
           <div className={styles.budgetGrid}>
             {budgets.map((budget) => {
-              const cat = getCategoryById(budget.category_id)
+              const cat = budget.category || getCategoryById(budget.category_id)
               const progressColor = getProgressColor(budget.percentage)
               const statusLabel = getStatusLabel(budget.percentage)
 
@@ -221,7 +222,8 @@ export default function BudgetsPage() {
 
 function BudgetModal({ budget, usedCategoryIds, onClose, onSuccess }) {
   const isEditing = !!budget
-  const expenseCategories = getCategoriesByType('expense')
+  const { categories } = useCategories()
+  const expenseCategories = categories.filter((c) => c.type === 'expense')
 
   const [categoryId, setCategoryId] = useState(budget?.category_id || '')
   const [amount, setAmount] = useState(budget ? Number(budget.amount) : '')

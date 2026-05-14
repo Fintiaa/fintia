@@ -162,6 +162,51 @@ export default function TransactionsPage() {
             <p className={styles.count}>
               {displayed.length === 1 ? t('count', { count: displayed.length }) : t('countPlural', { count: displayed.length })}
             </p>
+
+            {/* Mobile cards */}
+            <div className={styles.mobileList}>
+              {displayed.map((tx) => {
+                const cat = tx.category || getCategoryById(tx.category_id)
+                return (
+                  <div key={tx.id} className={styles.mobileCard}>
+                    <div className={styles.mobileCardTop}>
+                      <span
+                        className={styles.catIcon}
+                        style={{ background: (cat?.color || '#9ca3af') + '20', color: cat?.color || '#9ca3af' }}
+                      >
+                        {cat?.icon || '📦'}
+                      </span>
+                      <div className={styles.mobileCardInfo}>
+                        <div className={styles.mobileCardName}>{cat?.name || '—'}</div>
+                        <div className={styles.mobileCardMeta}>{fmtDate(tx.date)}</div>
+                      </div>
+                      <span className={`${styles.mobileCardAmount} ${tx.type === 'income' ? styles.incomeAmount : styles.expenseAmount}`}>
+                        {tx.type === 'income' ? '+' : '-'}{fmt(tx.amount)}
+                      </span>
+                    </div>
+                    <div className={styles.mobileCardBottom}>
+                      <span className={styles.mobileCardDesc}>
+                        {tx.description || <span className={styles.noDesc}>—</span>}
+                      </span>
+                      {deletingId === tx.id ? (
+                        <div className={styles.mobileDeleteConfirm}>
+                          <span>{t('deleteConfirm')}</span>
+                          <button className={styles.confirmYes} onClick={() => handleDelete(tx.id)} disabled={deleteLoading}>{t('yes')}</button>
+                          <button className={styles.confirmNo} onClick={() => setDeletingId(null)}>{t('no')}</button>
+                        </div>
+                      ) : (
+                        <div className={styles.mobileCardActions}>
+                          <button className={styles.editBtn} onClick={() => handleEdit(tx)}><Edit2 size={15} /></button>
+                          <button className={styles.deleteBtn} onClick={() => setDeletingId(tx.id)}><Trash2 size={15} /></button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Desktop table */}
             <div className={styles.tableWrapper}>
               <table className={styles.table}>
                 <thead>
