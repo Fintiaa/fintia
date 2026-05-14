@@ -27,8 +27,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function MonthlyBarChart({ data, incomeLabel, expensesLabel }) {
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} barGap={3} barCategoryGap="32%">
+    <ResponsiveContainer width="100%" height={240}>
+      <BarChart data={data} barGap={3} barCategoryGap="32%" margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
         <XAxis
           dataKey="month"
@@ -45,8 +45,11 @@ export default function MonthlyBarChart({ data, incomeLabel, expensesLabel }) {
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend
+          verticalAlign="bottom"
+          align="center"
           iconType="circle"
           iconSize={8}
+          wrapperStyle={{ paddingTop: 12 }}
           formatter={(value) => (
             <span style={{ fontSize: '0.78rem', color: '#374151' }}>{value}</span>
           )}
