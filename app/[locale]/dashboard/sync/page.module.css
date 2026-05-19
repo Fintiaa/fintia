@@ -295,8 +295,22 @@
 
 .connectionActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .connectionActions {
+    width: 100%;
+  }
+  .connectionActions .syncBtn,
+  .connectionActions .disconnectBtn {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    font-size: 0.78rem;
+    padding: 8px 10px;
+  }
 }
 
 .syncBtn {
