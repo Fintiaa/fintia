@@ -1,3 +1,7 @@
+> **Este repositorio fue migrado a [Truleno/fintia](https://github.com/Truleno/fintia) el 2026-10-13**
+> y está archivado (solo lectura). El código vive ahora en `apps/web` de ese repositorio,
+> junto con el backend (`apps/api`), con todo el historial de commits conservado.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
